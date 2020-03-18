@@ -12,8 +12,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 //***** ///// *****//
 var app = express();
-// mongoose.connect('mongodb+srv://mudassir:HP6910pc@smartlybiz-v9pjm.mongodb.net?authSource=admin')
-mongoose.connect('mongodb://localhost/gpsApp')
+// mongoose.connect('mongodb+srv://abdul:a!123456@cluster0-kfpwx.mongodb.net/test?retryWrites=true&w=majority')
+mongoose.connect('mongodb+srv://abdulbhai:W123456@cluster0-71cfj.mongodb.net/test?retryWrites=true&w=majority')
 .then(()=> console.log('connected to GPS APP...'))
 .catch((err)=> console.error('Could not connect to database...', err));
 //***** ///// *****//

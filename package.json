@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon ./bin/www"
+    "start": "node ./bin/www"
   },
   "dependencies": {
     "@sendgrid/mail": "^6.5.4",
@@ -26,5 +26,9 @@
     "nodemailer": "^6.4.5",
     "nodemailer-express-handlebars": "^3.1.0",
     "pug": "2.0.0-beta11"
+  },
+  "engines": {
+    "node": "10.12.0",
+    "npm": "6.4.1"
   }
 }

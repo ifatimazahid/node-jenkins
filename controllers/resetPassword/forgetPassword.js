@@ -6,19 +6,29 @@ const { UserData } = require('../../Models/user.model');
 const { Token } = require('../../Models/token.user.model');
 const nodemailer = require('nodemailer');
 var async = require('async');
-var crypto = require('crypto');
 const sgMail = require('@sendgrid/mail');
 const app = express();
 
-sgMail.setApiKey('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');
+
+
+function generateOTP() {
+    var digits = "0123456789";
+    let OTP = "";
+    for (let i = 0; i < 4; i++) {
+      OTP += digits[Math.floor(Math.random() * 10)];
+    }
+    return OTP;
+  }
+  sgMail.setApiKey(
+    "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"
+  );
 app.post('/', function (req, res, next) {
     console.log(req.body)
     async.waterfall([
         function (done) {
-            crypto.randomBytes(2, function (err, buf) {
-                var token = buf.toString('hex');
-                done(err, token);
-            });
+            var token = generateOTP();
+            done(null,token)
+
         },
         function (token, done) {
             UserData.findOne({ email: req.body.email }, function (err, user) {
@@ -38,14 +48,14 @@ app.post('/', function (req, res, next) {
                     });
                     var mailOptions = {
                         to: req.body.email,
-                        from: 'info@smartlybiz.com',
-                        subject: 'smartlybiz Password Reset',
+                        from: 'info@Convey.com',
+                        subject: 'Convey Password Reset',
                         text: 'Your code for reset password is ==> ' + token,
                         html: '<strong>'+token + '</strong>',
                     };
 
-                    // smtpTransport.sendMail
-                    sgMail.send(mailOptions, function (err) {
+                    sgMail.send(mailOptions,
+                         function (err) {
 
                         if (err) {
                             console.log(err)
@@ -81,14 +91,12 @@ app.post('/', function (req, res, next) {
 });
 
 async function createToken(token) {
-    // return new Promise((res)=> {
     const gettoken = new Token(token);
 
     try {
         const result = await gettoken.save();
     }
     catch (ex) {
-        console.log('catch');
         console.log(ex.code);
         return (500);
     }
