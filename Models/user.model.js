@@ -5,13 +5,13 @@ const config = require('config');
 
 
 const userSchema = new mongoose.Schema({
-    fullName: {
+    firstName: {
         type: String,
         min: 4,
         max: 30,
         required: true
     },
-    userName: {
+    lastName: {
         type: String,
         min: 4,
         max: 30,
@@ -23,14 +23,18 @@ const userSchema = new mongoose.Schema({
         required: true
     },
     mobile: {
-        type: Number,
-        required: true
+        type: Number
     },
     password: {
         type: String,
-        required: true,
+        required: false,
         // select:false
     },
+    Accounttype: {
+        type: Number
+    },
+    bio:String,
+    profile_img: { type:String},
     gcm_id: String,
     platform: String,
     createdDate:{ type:Date, default:Date.now },

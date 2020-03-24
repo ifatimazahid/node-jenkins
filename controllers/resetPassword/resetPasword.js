@@ -19,7 +19,7 @@ app.post('/', function (req, res, next) {
             const {error} = validateUserpassword({password:req.body.password});
             if(error){
                 console.log("password",error)
-                res.send({status:false,msg:"Enter correct password"});
+                res.send({success:false,msg:"Enter correct password"});
             }
             else{
                 // console.log(response.)
@@ -30,15 +30,15 @@ app.post('/', function (req, res, next) {
                 const result = await userdata.updateOne({$set:{password:hashed}});
                 console.log(result);
                 if(result){
-                    res.send({status:true,msg:'password updated' , res:result});
+                    res.send({success:true,msg:'password updated' , res:result});
                 }
                 else{
-                    res.send({status:false,msg:"something went wrong"});
+                    res.send({success:false,msg:"something went wrong"});
                 }
             }
         }
         else{
-            res.send({status:false,msg:"error"});
+            res.send({success:false,msg:"error"});
         }
     });
    

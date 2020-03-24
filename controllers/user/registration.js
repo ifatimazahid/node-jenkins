@@ -38,7 +38,7 @@ app.post('/', (req, res)=> {
             const requestData = {
                 success: true,
                 msg: 'User created successfully.',
-                data: _.pick(req.body, ['_id', 'userName', 'mobile', 'fullName', 'email', 'createdDate'])
+                data: _.pick(req.body, ['_id', 'lastName', 'mobile', 'firstName', 'email', 'createdDate'])
             }
             res.send(requestData);
         }
@@ -49,10 +49,10 @@ app.post('/', (req, res)=> {
 //***** User signup data validation function *****//
 function validateUserData(userData) {
     const schema = Joi.object().keys({
-        fullName: Joi.string().min(4).max(30).required(),
-        userName: Joi.string().min(4).max(30).required(),
+        firstName: Joi.string().min(4).max(30).required(),
+        lastName: Joi.string().min(4).max(30).required(),
         email: Joi.string().email({ minDomainAtoms: 2 }).required(),
-        mobile: Joi.number().required(),
+        mobile: Joi.number(),
         password: Joi.string().min(5),
         gcm_id: Joi.string(),
         platform: Joi.string()
@@ -64,6 +64,8 @@ function validateUserData(userData) {
 //***** Initialing and saving data *****//
 async function createUser(userData) {
     // return new Promise((res)=> {
+    userData.profile_img = 'host/public/images/user.png';
+    userData.login_type = 0;
     const user = new UserData(userData);
     const salt = await bcrypt.genSalt(10);
     const hashed = await bcrypt.hash(user.password, salt);

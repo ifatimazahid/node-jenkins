@@ -33,7 +33,7 @@ app.post('/', function (req, res, next) {
         function (token, done) {
             UserData.findOne({ email: req.body.email }, function (err, user) {
                 if (!user) {
-                    res.send({status:false, msg:'error No account with that email address exists.'});
+                    res.send({success:false, msg:'error No account with that email address exists.'});
                     //   return res.redirect('/forgot');
                 }
                 else if (user) {
@@ -71,7 +71,7 @@ app.post('/', function (req, res, next) {
                                     res.status(403).send("error");
                                 }
                                 else if (response === 200) {
-                                    res.send({ status: true, msg:"check your email "+ req.body.email, userId: user._id });
+                                    res.send({ success: true, msg:"check your email "+ req.body.email, userId: user._id });
                                 }
                             }));
                         }

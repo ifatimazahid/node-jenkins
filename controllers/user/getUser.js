@@ -14,6 +14,7 @@ const app = express();
 
 //***** Post Request for Login *****//
 app.get('/', auth, async(req, res)=> {
+    const url = req.protocol + '://' + req.get('host');
     const user = await UserData.findById(req.user._id).select('-password');
     if(!user) {
         var errors = {
@@ -24,6 +25,13 @@ app.get('/', auth, async(req, res)=> {
         res.send(errors);
     }
     else {
+        console.log()
+        var checkProfile =user.profile_img.slice(0,user.profile_img.indexOf("/public"))
+        if(checkProfile == 'host'){
+            user.profile_img = user.profile_img.slice(user.profile_img.indexOf("public")-1, user.profile_img.length);
+            user.profile_img = `${url}${user.profile_img}`
+        }
+  
         var success = {
             success:true,
             msg:'User Found',

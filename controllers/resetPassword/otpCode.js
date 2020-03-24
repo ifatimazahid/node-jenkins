@@ -13,12 +13,12 @@ app.post('/', function (req, res, next) {
     gettoken(req.body).then(response => {
         // console.log(response)
         if(response.status === 500){
-            res.send({status:false,verified:false});
+            res.send({success:false,verified:false,msg:"Error"});
         }
         else if(response.status === 200){
             
             
-                res.send({status:true,verified:true});
+                res.send({success:true,verified:true,msg:"successfull"});
            
             
             

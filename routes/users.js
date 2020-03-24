@@ -17,6 +17,11 @@ const loginModule = require('../controllers/user/login');
 app.use('/login', loginModule);
 //***** ///// *****//
 
+//~~ Social Login ~~//
+const  SocialloginModule = require('../controllers/user/socialLogin');
+app.use('/social-login', SocialloginModule);
+//***** ///// *****//
+
 //~~ Edit Profile ~~//
 const editModule = require('../controllers/user/editProfile');
 app.use('/edit', editModule);

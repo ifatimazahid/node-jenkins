@@ -14,6 +14,7 @@ const app = express();
 
 //***** Post Request for Login *****//
 app.post('/', (req, res)=> {
+    const url = req.protocol + '://' + req.get('host');
     const { error } = validateUserData(req.body);
     if(error) {
         var errors = {
@@ -35,10 +36,12 @@ app.post('/', (req, res)=> {
             res.send(errors);
         }
         else {
+            var data = _.pick(response, ['_id', 'firstName','lastName', 'mobile', 'liked_stores', 'email','profile_img', 'createdDate', 'access_token']);
+            data.profile_img =`${url}${data.profile_img}`
             var success = {
                 success:true,
                 msg:'User Found',
-                data:_.pick(response, ['_id', 'userName', 'mobile', 'liked_stores', 'fullName', 'email', 'createdDate', 'access_token'])
+                data:data
             };
             res.send(success);
         }
