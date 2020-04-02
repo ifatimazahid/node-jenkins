@@ -16,7 +16,6 @@ const fileStorage = multer.diskStorage({
     cb(null, DIR); // for folder name
   },
   filename: (req, file, cb) => {
-    console.log(file, "iiiiiiiiiiiiiiii");
     cb(
       null,
       `${new Date().toISOString().replace(/:/g, "-")}-${file.originalname}`
@@ -83,6 +82,7 @@ function validateUserData(userData) {
     lastName: Joi.string().min(4).max(30).required(),
     mobile: Joi.number(),
     profile_img: Joi,
+    bio : Joi.string().min(5).max(1000),
     _id: Joi.string()
   });
   return Joi.validate(userData, schema);

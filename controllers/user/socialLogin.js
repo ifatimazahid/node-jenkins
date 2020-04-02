@@ -15,10 +15,9 @@ const app = express();
 
 //***** Post Request for Login *****//
 app.post('/', (req, res) => {
-    console.log("Achaaaaaaaaaaaaaaaaaaaaaaaaa", req.body)
-
     const url = req.protocol + '://' + req.get('host');
     const { error } = validateUserData(req.body);
+    console.log(error)
     if (error) {
         var errors = {
             success: false,
@@ -61,7 +60,7 @@ function validateUserData(userData) {
         gcm_id: Joi.string(),
         platform: Joi.string(),
         firstName: Joi.string(),
-        lastName: Joi.string(),
+        lastName: Joi,
         profile_img: Joi.string(),
         idToken: Joi.string(),
         authCode: Joi.string(),
@@ -100,7 +99,7 @@ async function checkUser(body) {
         }
     }
     const Socialuser = await SocialUserData.findOne({ email: body.email });
-    if (user.Accounttype != 0) {
+    if (user.Accounttype && user.Accounttype != 0) {
         if (!Socialuser) {
             try {
                 const result = await SavesocialUser.save();

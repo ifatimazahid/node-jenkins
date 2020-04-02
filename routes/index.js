@@ -1,9 +1,11 @@
 var express = require('express');
-var router = express.Router();
-
+const usersRouter = require('./users');
+const placesRouter = require('./places');
+const passwordRouter = require('./resetPassword');
+var app = express();
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
-});
 
-module.exports = router;
+app.use('/user', usersRouter);
+app.use('/password', passwordRouter);
+app.use('/places', placesRouter);
+module.exports = app;
