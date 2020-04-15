@@ -25,7 +25,6 @@ app.get('/', auth, async(req, res)=> {
         res.send(errors);
     }
     else {
-        console.log()
         var checkProfile =user.profile_img.slice(0,user.profile_img.indexOf("/public"))
         if(checkProfile == 'host'){
             user.profile_img = user.profile_img.slice(user.profile_img.indexOf("public")-1, user.profile_img.length);

@@ -8,7 +8,7 @@ const placeSchema = new mongoose.Schema({
     title: {
         type: String,
         min: 4,
-        max: 30,
+        max: 1000,
         required: true
     },
     type:{
@@ -21,7 +21,7 @@ const placeSchema = new mongoose.Schema({
        unique:true,
        required:true
    },
-
+googlePlaceId:{type:String,required:true,unique:true},
 visitingNo:{
     type:Number
 },

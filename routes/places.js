@@ -31,7 +31,8 @@ app.use('/add', addPlaces);
 const getPlaces = require('../controllers/places/getplace');
 app.use('/getplaces', getPlaces);
 
-
+const getMyPlaces = require('../controllers/places/getMyplaces');
+app.use('/getmyplaces', getMyPlaces);
 // const editPlaces = require('../controllers/places/editplace');
 // app.use('/editplace', editPlaces);
 //***** ///// *****//

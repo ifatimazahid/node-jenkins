@@ -4,7 +4,7 @@ const express = require('express');
 const Joi = require('joi');
 const { UserData } = require('../../Models/user.model');
 const { placeData } = require('../../Models/places.model');
-const { yourplaceData } = require('../../Models/yourPlaces.model');
+const { visitplaceData } = require('../../Models/visitPlaces.model');
 
 const multer = require("multer");
 const auth = require('../../middleware/auth');
@@ -35,8 +35,8 @@ app.post('/', auth, (req, res) => {
                 return;
             }
             createPlace(response).then(result => {
-                var myPlaceData = { _userId: req.user._id, _placeId: result._id, title: result.title }
-                createMyplace(myPlaceData).then((re) => { }).catch(err => { })
+                // var myPlaceData = { _userId: req.user._id, _placeId: result._id }
+                // createMyplace(myPlaceData).then((re) => { }).catch(err => { })
             }).catch(err => {
 
             })
@@ -53,7 +53,7 @@ app.post('/', auth, (req, res) => {
                 return;
             }
             createPlace(response).then(result => {
-                var myPlaceData = { _userId: req.user._id, _placeId: result._id, title: result.title }
+                var myPlaceData = { _userId: req.user._id, _placeId: result._id }
                 createMyplace(myPlaceData).then((re) => { }).catch(err => { })
             }).catch(err => {
 
@@ -77,9 +77,10 @@ app.post('/', auth, (req, res) => {
 //***** User login data validation function *****//
 function validatePlace(placeData) {
     const schema = Joi.object().keys({
-        title: Joi.string().min(4).max(30).required(),
-        latitude: Joi.string().min(4).max(30).required(),
+        title: Joi.string().min(4).max(1000).required(),
+        latitude: Joi.number().required(),
         longitude: Joi.number().required(),
+        googlePlaceId:Joi.string().required(),
     });
     return Joi.validate(placeData, schema);
 }
@@ -104,33 +105,55 @@ async function checkUplocation(body) {
         };
         return errors;
     }
-    var data = { title: body.title, location: [body.latitude, body.longitude] }
+    var data = { title: body.title, location: [body.latitude, body.longitude], googlePlaceId:body.googlePlaceId }
     return data;
 }
 async function createPlace(body) {
     var findResult;
     const place = new placeData(body);
+    const findPlace = await placeData.findOne({ location: body.location,googlePlaceId:body.googlePlaceId });
+    if(findPlace){
+        return findPlace;
+    }
     try {
         const result = await place.save();
 
         findResult = result;
     }
     catch (ex) {
-        const findPlace = await placeData.findOne({ location: body.location });
+
         findResult = findPlace;
     }
     return findResult;
 }
 async function createMyplace(body) {
-    const place = new yourplaceData(body);
-    try {
-        const result = await place.save();
+    const findPlace = await visitplaceData.findOne({ _userId: body._userId,_placeId:body._placeId });
+    if(findPlace){
+        console.log(findPlace,"aaaaaaaaaaaaaaaaaaaaaaaaa")
+        var bod = {
+            lastUpdate: new Date(),
+            visitingNo: findPlace.visitingNo+1
+            }
+         await visitplaceData.updateOne(
+           {"_id" :findPlace._id} ,
+            { $set: bod},function (err){
+                console.log("Errrrrrrrrrrrrrrrrrrrrrrrrrrrrrr",err)
+            }    
+        )
+        return (300) 
+    }
+    else{
+        const place = new visitplaceData(body);
+        try {
+            const result = await place.save();
+    
+        }
+        catch (ex) {
+            return (500);
+        }
+        return (200);
+    }
 
-    }
-    catch (ex) {
-        return (500);
-    }
-    return (200);
 }
 async function checkdownlocation(body) {
     const { error } = validatePlace(body);
@@ -143,7 +166,7 @@ async function checkdownlocation(body) {
         };
         return errors;
     }
-    var data = { title: body.title, location: [body.latitude, body.longitude] }
+    var data = { title: body.title, location: [body.latitude, body.longitude], googlePlaceId:body.googlePlaceId }
     return data;
 }
 //***** ///// *****//

@@ -8,20 +8,19 @@ const YourplaceSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId, 
         required: true, ref: 'User' 
       },
-      _placeId: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        required: true, ref: 'place' 
-      },
-    title: {
+    work: {
         type: String,
-        min: 4,
-        max: 30,
-        required: true
+        default:null
     },
-   visitingNo:{
-      type:Number,
-      default:0
-  },
+    home:{
+        type: String,
+        default:null
+    },
+    fav:{
+        type:[String],
+        default:[]
+    },
+   
   lastUpdate:{
     type:Date
   },

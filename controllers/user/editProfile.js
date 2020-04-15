@@ -16,6 +16,7 @@ const fileStorage = multer.diskStorage({
     cb(null, DIR); // for folder name
   },
   filename: (req, file, cb) => {
+    console.log(file, "iiiiiiiiiiiiiiii");
     cb(
       null,
       `${new Date().toISOString().replace(/:/g, "-")}-${file.originalname}`

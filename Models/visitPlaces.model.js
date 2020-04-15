@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 
 
 
-const YourplaceSchema = new mongoose.Schema({
+const VisitplaceSchema = new mongoose.Schema({
     _userId: { 
         type: mongoose.Schema.Types.ObjectId, 
         required: true, ref: 'User' 
@@ -12,12 +12,7 @@ const YourplaceSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId, 
         required: true, ref: 'place' 
       },
-    title: {
-        type: String,
-        min: 4,
-        max: 30,
-        required: true
-    },
+    
    visitingNo:{
       type:Number,
       default:0
@@ -28,7 +23,7 @@ const YourplaceSchema = new mongoose.Schema({
     createdDate:{ type:Date, default:Date.now },
 });
 
-const yourplaceData = mongoose.model('yourPlaces', YourplaceSchema);
+const visitplaceData = mongoose.model('visitPlaces', VisitplaceSchema);
 
 
-exports.yourplaceData =  yourplaceData;
+exports.visitplaceData =  visitplaceData;
