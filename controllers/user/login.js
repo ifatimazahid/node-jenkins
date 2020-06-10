@@ -22,7 +22,7 @@ app.post('/', (req, res)=> {
             msg:error.name, 
             data:error.details[0].message
         };
-        res.send(errors);
+        res.status(400).send(errors);
         return;
     }
     
@@ -33,7 +33,7 @@ app.post('/', (req, res)=> {
                 msg:'Invalid email or password.', 
                 data:''
             };
-            res.send(errors);
+            res.status(400).send(errors);
         }
         else {
             var data = _.pick(response, ['_id', 'firstName','lastName', 'mobile', 'liked_stores', 'email','profile_img', 'createdDate', 'access_token']);
@@ -63,6 +63,7 @@ function validateUserData(userData) {
 
 async function checkUser(body) {
     const user = await UserData.findOne({email:body.email});
+    console.log(user)
     if(!user) return null;
     
     const validPassword = await bcrypt.compare(body.password, user.password);

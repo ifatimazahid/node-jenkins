@@ -30,5 +30,10 @@ app.use('/edit', editModule);
 //~~ Get user Profile ~~//
 const getUser = require('../controllers/user/getUser');
 app.use('/getUser', getUser);
+
+
+// get all user
+const getAllUser = require('../controllers/user/getAllUser');
+app.use('/getAll', getAllUser);
 //***** ///// *****//
 module.exports = app;

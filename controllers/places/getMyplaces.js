@@ -17,7 +17,6 @@ const app = express();
 //***** Post Request for Login *****//
 app.get('/', auth, async(req, res)=> {
  const MyPlace = await getPlaceByUser(req);
- console.log(MyPlace,"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
 
 let work = MyPlace.work;
 let Home = MyPlace.home;
