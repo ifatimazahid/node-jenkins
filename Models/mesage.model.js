@@ -18,7 +18,7 @@ const MessageSchema = new mongoose.Schema({
     createdDate:{ type:Date, default:Date.now },
 });
 
-const MessageData = mongoose.model('users', MessageSchema);
+const MessageData = mongoose.model('message', MessageSchema);
 
 
 exports.MessageData = MessageData;

@@ -8,15 +8,18 @@ const indexRouter = require("./routes/index");
 const helmet = require("helmet");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const {ConversationData} = require('./Models/conversation.model')
+const socket = require('./webSockets/sockets')
+const { ConversationData } = require('./Models/conversation.model')
+const { MessageData } = require('./Models/mesage.model')
+const { UserData } = require('./Models/user.model');
 //***** ///// *****//
 var app = express();
 var io = require('socket.io')();
 app.io = io;
 
 mongoose.connect('mongodb+srv://abdulbhai:W123456@cluster0-71cfj.mongodb.net/test?retryWrites=true&w=majority')
-.then(()=> console.log('connected to GPS APP...'))
-.catch((err)=> console.error('Could not connect to database...', err));
+  .then(() => console.log('connected to GPS APP...'))
+  .catch((err) => console.error('Could not connect to database...', err));
 //***** ///// *****//
 
 // view engine setup
@@ -34,36 +37,58 @@ app.use("/api", indexRouter);
 app.use(function (req, res, next) {
   next(createError(404));
 });
-app.io.on("connection",async function(client) {
-  client.on("sign-in", e => {
-    const convo = await ConversationData.find({creator:e._id})
-    app.io.emit("getAll",{conversation:convo})
-    console.log("aaaaaaaaaaa",e)
-  
-  });
+// app.use("/",socket)
+app.io.on("connection", async function (client) {
+  client.on("sign-in", async e => {
+   let convo = await ConversationData.find({ members: e._id })
+   
+    app.io.emit("getAll", { conversation: convo })
+    console.log("aaaaaaaaaaa", e)
 
-  client.on("message", e => {
-    let targetId = e.to;
+  });
+  client.on("getConvo", async e => {
+
+  })
+  client.on("message",async e => {
     console.log(e)
-    let sourceId = client.user_id;
-    console.log(client.user_id,clients)
-    cli.emit("message", e);
-    if(targetId && clients[targetId]) {
-      clients[targetId].forEach(cli => {
-        console.log("asasas",cli)
-        cli.emit("message", e);
-      });
+    let newConversation = {
+      members: [e.from, e.to],
+      creator: e.from
     }
+    const conversation = new ConversationData(newConversation)
+    // try {
+      var result =await conversation.save();
+      console.log(result, "res")
+      let message = {
+        conversationId: result._id,
+        author: e.from,
+        content: e.msg
+      }
+      const newMessage = new MessageData(message)
+      const messageResult =await newMessage.save()
+      app.io.emit("message", { msg: messageResult })
+    // }
+    // const convo = await ConversationData.find({creator:e.from})
+    // console.log(e)
+    // let sourceId = client.user_id;
+    // console.log(client.user_id,clients)
+    // cli.emit("message", e);
+    // if(targetId && clients[targetId]) {
+    //   clients[targetId].forEach(cli => {
+    //     console.log("asasas",cli)
+    //     cli.emit("message", e);
+    //   });
+    // }
 
-    if(sourceId && clients[sourceId]) {
-      clients[sourceId].forEach(cli => {
-        console.log("asasas",cli)
-        cli.emit("message", e);
-      });
-    }
+    // if(sourceId && clients[sourceId]) {
+    //   clients[sourceId].forEach(cli => {
+    //     console.log("asasas",cli)
+    //     cli.emit("message", e);
+    //   });
+    // }
   });
 
-  client.on("disconnect", function() {
+  client.on("disconnect", function () {
     if (!client.user_id || !clients[client.user_id]) {
       return;
     }
