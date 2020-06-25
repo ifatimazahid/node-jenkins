@@ -1,23 +1,24 @@
-
-const mongoose = require('mongoose');
-const config = require('config');
-
+const mongoose = require("mongoose");
+const config = require("config");
 
 const conversationSchema = new mongoose.Schema({
-    members: {
-       type:[String]
-    },
-    conversationName:{
-        type:String
-    },
-    creator: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        required: true, ref: 'User' 
-      },
-    createdDate:{ type:Date, default:Date.now },
+  convoId: {
+    type: mongoose.Schema.Types.ObjectId,
+  },
+  members: {
+    type: [String],
+  },
+  conversationName: {
+    type: String,
+  },
+  creator: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "User",
+  },
+  createdDate: { type: Date, default: Date.now },
 });
 
-const ConversationData = mongoose.model('conversation', conversationSchema);
-
+const ConversationData = mongoose.model("conversation", conversationSchema);
 
 exports.ConversationData = ConversationData;
