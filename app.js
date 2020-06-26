@@ -40,6 +40,7 @@ app.use(function (req, res, next) {
   next(createError(404));
 });
 // app.use("/",socket)
+
 app.io.on("connection", async function (client) {
   client.on("sign-in", async (e) => {
     let convo = await ConversationData.find({ members: e._id });
@@ -54,29 +55,81 @@ app.io.on("connection", async function (client) {
     let allMessages = await MessageData.find({ conversationId: e });
     // let allMessages = await MessageData.find().limit(1).sort({ $natural: -1 });
 
+    // let test = await MessageData.find().sort({ _id: -1 }).limit(1);
+
+    // console.log("<<<", test, "??");
+
     app.io.emit("getMessages", allMessages);
   });
 
   client.on("message", async (e) => {
-    console.log([e.from, e.to]);
+    // let from = e.from;
+    // let to = e.to;
 
-    let alreadyConvo = await ConversationData.find({
-      members: [e.from, e.to],
-    });
+    let from = [e.from, e.to];
+    let to = [e.to, e.from];
+
+    let alreadyConvo = await ConversationData.find({ members: from });
+    let alreadyChat = await ConversationData.find({ members: to });
+
+    // console.log(from, "from");
+
+    // alreadyConvo.map((v) => {
+    //   if (
+    //     (v.members[0] === e.from && v.members[1] === e.to) ||
+    //     (v.members[0] === e.to && v.members[1] === e.from)
+    //   ) {
+    //     console.log("1 matched");
+    //   }
+    // });
+
+    // let alreadyChat = await ConversationData.find({
+    //   members: to,
+    // });
+
+    if (alreadyChat.length) {
+      alreadyChat.filter(async (items) => {
+        if (items._id) {
+          let message = {
+            conversationId: items._id,
+            author: e.from,
+            text: e.msg,
+          };
+
+          const newMessage = new MessageData(message);
+          const messageResult = await newMessage.save();
+          app.io.emit("message", { msg: messageResult });
+        }
+      });
+    } else {
+      let newConversation = {
+        // _id: items._id,
+        convoId: e.from,
+        members: [e.from, e.to],
+        creator: e.from,
+      };
+      const conversation = new ConversationData(newConversation);
+
+      var result = await conversation.save();
+
+      // let alreadyChat = await MessageData.find({
+      //   convoId: e,
+      // }).populate("conversations");
+
+      let message = {
+        conversationId: result._id,
+        author: e.from,
+        text: e.msg,
+      };
+
+      const newMessage = new MessageData(message);
+      const messageResult = await newMessage.save();
+      app.io.emit("message", { msg: messageResult });
+    }
 
     if (alreadyConvo.length) {
       alreadyConvo.filter(async (items) => {
         if (items._id) {
-          // let newConversation = {
-          //   _id: items._id,
-          //   convoId: e.from,
-          //   members: [e.from, e.to],
-          //   creator: e.from,
-          // };
-          // const conversation = new ConversationData(newConversation);
-
-          // var result = await conversation.save();
-
           let message = {
             conversationId: items._id,
             author: e.from,
