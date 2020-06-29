@@ -16,14 +16,12 @@ const { UserData } = require("./Models/user.model");
 var app = express();
 var io = require("socket.io")();
 app.io = io;
-
 mongoose
   .connect(
     "mongodb+srv://abdulbhai:W123456@cluster0-71cfj.mongodb.net/test?retryWrites=true&w=majority"
   )
   .catch((err) => console.error("Could not connect to database...", err));
 //***** ///// *****//
-
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "pug");
@@ -39,23 +37,18 @@ app.use("/api", indexRouter);
 app.use(function (req, res, next) {
   next(createError(404));
 });
-
 app.io.on("connection", async function (client) {
   client.on("sign-in", async (e) => {
     let convo = await ConversationData.find({ members: e._id });
-
     app.io.emit("getAll", { conversation: convo });
   });
   client.on("getConvo", async (e) => {});
-
   client.on("filter-messages", async (e) => {
     console.log(e);
-
     let allMessages = await MessageData.find({ conversationId: e });
 
     app.io.emit("getMessages", allMessages);
   });
-
   client.on("message", async (e) => {
     let from = [e.from, e.to];
     let to = [e.to, e.from];
@@ -107,7 +100,6 @@ app.io.on("connection", async function (client) {
             author: e.from,
             text: e.msg,
           };
-
           const newMessage = new MessageData(message);
           const messageResult = await newMessage.save();
           app.io.emit("message", { msg: messageResult });
@@ -115,31 +107,23 @@ app.io.on("connection", async function (client) {
       });
     } else {
       let newConversation = {
-        // _id: items._id,
         convoId: e.from,
         members: [e.from, e.to],
         creator: e.from,
       };
       const conversation = new ConversationData(newConversation);
-
       var result = await conversation.save();
-
-      // let alreadyChat = await MessageData.find({
-      //   convoId: e,
-      // }).populate("conversations");
 
       let message = {
         conversationId: result._id,
         author: e.from,
         text: e.msg,
       };
-
       const newMessage = new MessageData(message);
       const messageResult = await newMessage.save();
       app.io.emit("message", { msg: messageResult });
     }
   });
-
   client.on("disconnect", function () {
     if (!client.user_id || !clients[client.user_id]) {
       return;
@@ -157,10 +141,8 @@ app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};
-
   // render the error page
   res.status(err.status || 500);
   res.render("error");
 });
-
 module.exports = app;
