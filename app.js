@@ -12,6 +12,7 @@ const socket = require("./webSockets/sockets");
 const { ConversationData } = require("./Models/conversation.model");
 const { MessageData } = require("./Models/mesage.model");
 const { UserData } = require("./Models/user.model");
+const { fromPairs } = require("lodash");
 //***** ///// *****//
 var app = express();
 var io = require("socket.io")();
@@ -39,7 +40,6 @@ app.use("/api", indexRouter);
 app.use(function (req, res, next) {
   next(createError(404));
 });
-// app.use("/",socket)
 
 app.io.on("connection", async function (client) {
   client.on("sign-in", async (e) => {
@@ -53,79 +53,60 @@ app.io.on("connection", async function (client) {
     console.log(e);
 
     let allMessages = await MessageData.find({ conversationId: e });
-    // let allMessages = await MessageData.find().limit(1).sort({ $natural: -1 });
 
-    // let test = await MessageData.find().sort({ _id: -1 }).limit(1);
-
-    // console.log("<<<", test, "??");
+    console.log("check", allMessages);
 
     app.io.emit("getMessages", allMessages);
   });
 
   client.on("message", async (e) => {
-    // let from = e.from;
-    // let to = e.to;
-
     let from = [e.from, e.to];
     let to = [e.to, e.from];
 
-    let alreadyConvo = await ConversationData.find({ members: from });
-    let alreadyChat = await ConversationData.find({ members: to });
+    let test = to.reverse();
 
-    // console.log(from, "from");
+    console.log("test", test);
 
-    // alreadyConvo.map((v) => {
-    //   if (
-    //     (v.members[0] === e.from && v.members[1] === e.to) ||
-    //     (v.members[0] === e.to && v.members[1] === e.from)
-    //   ) {
-    //     console.log("1 matched");
-    //   }
-    // });
+    let alreadyConvo = await ConversationData.find({
+      members: from ? from : test,
+    });
+    // let alreadyChat = await ConversationData.find({ members: to });
 
-    // let alreadyChat = await ConversationData.find({
-    //   members: to,
-    // });
+    // if (alreadyChat.length) {
+    //   alreadyChat.filter(async (items) => {
+    //     if (items._id) {
+    //       let message = {
+    //         conversationId: items._id,
+    //         author: e.from,
+    //         text: e.msg,
+    //       };
 
-    if (alreadyChat.length) {
-      alreadyChat.filter(async (items) => {
-        if (items._id) {
-          let message = {
-            conversationId: items._id,
-            author: e.from,
-            text: e.msg,
-          };
+    //       const newMessage = new MessageData(message);
+    //       const messageResult = await newMessage.save();
+    //       app.io.emit("message", { msg: messageResult });
+    //     }
+    //   });
+    // } else {
+    //   let newConversation = {
+    //     // _id: items._id,
+    //     convoId: e.from,
+    //     members: [e.from, e.to],
+    //     creator: e.from,
+    //   };
+    //   const conversation = new ConversationData(newConversation);
 
-          const newMessage = new MessageData(message);
-          const messageResult = await newMessage.save();
-          app.io.emit("message", { msg: messageResult });
-        }
-      });
-    } else {
-      let newConversation = {
-        // _id: items._id,
-        convoId: e.from,
-        members: [e.from, e.to],
-        creator: e.from,
-      };
-      const conversation = new ConversationData(newConversation);
+    //   var result = await conversation.save();
 
-      var result = await conversation.save();
+    //   let message = {
+    //     conversationId: result._id,
+    //     author: e.from,
+    //     text: e.msg,
+    //   };
 
-      // let alreadyChat = await MessageData.find({
-      //   convoId: e,
-      // }).populate("conversations");
-
-      let message = {
-        conversationId: result._id,
-        author: e.from,
-        text: e.msg,
-      };
-
-      const newMessage = new MessageData(message);
-      const messageResult = await newMessage.save();
-      app.io.emit("message", { msg: messageResult });
-    }
+    //   const newMessage = new MessageData(message);
+    //   const messageResult = await newMessage.save();
+    //   app.io.emit("message", { msg: messageResult });
+    // }
 
     if (alreadyConvo.length) {
       alreadyConvo.filter(async (items) => {
@@ -166,26 +147,6 @@ app.io.on("connection", async function (client) {
       const messageResult = await newMessage.save();
       app.io.emit("message", { msg: messageResult });
     }
-
-    // sahi ha
-
-    // }
-    // const convo = await ConversationData.find({creator:e.from})
-    // console.log(e)
-    // let sourceId = client.user_id;
-    // console.log(client.user_id,clients)
-    // cli.emit("message", e);
-    // if(targetId && clients[targetId]) {
-    //   clients[targetId].forEach(cli => {
-    //     cli.emit("message", e);
-    //   });
-    // }
-
-    // if(sourceId && clients[sourceId]) {
-    //   clients[sourceId].forEach(cli => {
-    //     cli.emit("message", e);
-    //   });
-    // }
   });
 
   client.on("disconnect", function () {
