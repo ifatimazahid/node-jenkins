@@ -12,7 +12,6 @@ const socket = require("./webSockets/sockets");
 const { ConversationData } = require("./Models/conversation.model");
 const { MessageData } = require("./Models/mesage.model");
 const { UserData } = require("./Models/user.model");
-const { fromPairs } = require("lodash");
 //***** ///// *****//
 var app = express();
 var io = require("socket.io")();
@@ -54,8 +53,6 @@ app.io.on("connection", async function (client) {
 
     let allMessages = await MessageData.find({ conversationId: e });
 
-    console.log("check", allMessages);
-
     app.io.emit("getMessages", allMessages);
   });
 
@@ -63,50 +60,44 @@ app.io.on("connection", async function (client) {
     let from = [e.from, e.to];
     let to = [e.to, e.from];
 
-    let test = to.reverse();
+    let alreadyConvo = await ConversationData.find({ members: from });
+    let alreadyChat = await ConversationData.find({ members: to });
 
-    console.log("test", test);
+    if (alreadyChat.length) {
+      alreadyChat.filter(async (items) => {
+        if (items._id) {
+          let message = {
+            conversationId: items._id,
+            author: e.from,
+            text: e.msg,
+          };
 
-    let alreadyConvo = await ConversationData.find({
-      members: from ? from : test,
-    });
-    // let alreadyChat = await ConversationData.find({ members: to });
+          const newMessage = new MessageData(message);
+          const messageResult = await newMessage.save();
+          app.io.emit("message", { msg: messageResult });
+        }
+      });
+    } else {
+      let newConversation = {
+        // _id: items._id,
+        convoId: e.from,
+        members: [e.from, e.to],
+        creator: e.from,
+      };
+      const conversation = new ConversationData(newConversation);
 
-    // if (alreadyChat.length) {
-    //   alreadyChat.filter(async (items) => {
-    //     if (items._id) {
-    //       let message = {
-    //         conversationId: items._id,
-    //         author: e.from,
-    //         text: e.msg,
-    //       };
+      var result = await conversation.save();
 
-    //       const newMessage = new MessageData(message);
-    //       const messageResult = await newMessage.save();
-    //       app.io.emit("message", { msg: messageResult });
-    //     }
-    //   });
-    // } else {
-    //   let newConversation = {
-    //     // _id: items._id,
-    //     convoId: e.from,
-    //     members: [e.from, e.to],
-    //     creator: e.from,
-    //   };
-    //   const conversation = new ConversationData(newConversation);
+      let message = {
+        conversationId: result._id,
+        author: e.from,
+        text: e.msg,
+      };
 
-    //   var result = await conversation.save();
-
-    //   let message = {
-    //     conversationId: result._id,
-    //     author: e.from,
-    //     text: e.msg,
-    //   };
-
-    //   const newMessage = new MessageData(message);
-    //   const messageResult = await newMessage.save();
-    //   app.io.emit("message", { msg: messageResult });
-    // }
+      const newMessage = new MessageData(message);
+      const messageResult = await newMessage.save();
+      app.io.emit("message", { msg: messageResult });
+    }
 
     if (alreadyConvo.length) {
       alreadyConvo.filter(async (items) => {
