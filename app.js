@@ -40,90 +40,56 @@ app.use(function (req, res, next) {
 });
 app.io.on("connection", async function (client) {
   client.on("sign-in", async (e) => {
-    let convo = await ConversationData.find({ members: e._id });
+    let convo = await ConversationData.find();
     app.io.emit("getAll", { conversation: convo });
   });
   client.on("getConvo", async (e) => {});
   client.on("filter-messages", async (e) => {
-    console.log(e);
     let allMessages = await MessageData.find({ conversationId: e });
-
-    console.log("check", allMessages);
-
     app.io.emit("getMessages", allMessages);
   });
   client.on("message", async (e) => {
-    let from = [e.from, e.to];
-    let to = [e.to, e.from];
+    let from = e.from;
+    let to = e.to;
 
-    let test = to.reverse();
-
-    console.log("test", test);
-
-    let alreadyConvo = await ConversationData.find({
-      members: from ? from : test,
-    });
-    // let alreadyChat = await ConversationData.find({ members: to });
-
-    // if (alreadyChat.length) {
-    //   alreadyChat.filter(async (items) => {
-    //     if (items._id) {
-    //       let message = {
-    //         conversationId: items._id,
-    //         author: e.from,
-    //         text: e.msg,
-    //       };
-
-    //       const newMessage = new MessageData(message);
-    //       const messageResult = await newMessage.save();
-    //       app.io.emit("message", { msg: messageResult });
-    //     }
-    //   });
-    // } else {
-    //   let newConversation = {
-    //     // _id: items._id,
-    //     convoId: e.from,
-    //     members: [e.from, e.to],
-    //     creator: e.from,
-    //   };
-    //   const conversation = new ConversationData(newConversation);
-
-    //   var result = await conversation.save();
-
-    //   let message = {
-    //     conversationId: result._id,
-    //     author: e.from,
-    //     text: e.msg,
-    //   };
-
-    //   const newMessage = new MessageData(message);
-    //   const messageResult = await newMessage.save();
-    //   app.io.emit("message", { msg: messageResult });
-    // }
-
+    let alreadyConvo = await ConversationData.find();
     if (alreadyConvo.length) {
-      alreadyConvo.filter(async (items) => {
-        if (items._id) {
-          let message = {
-            conversationId: items._id,
-            author: e.from,
-            text: e.msg,
-          };
-          const newMessage = new MessageData(message);
-          const messageResult = await newMessage.save();
-          app.io.emit("message", { msg: messageResult });
-        }
-      });
+      if (
+        alreadyConvo[0].creator == e.from &&
+        alreadyConvo[0].receiver == e.to
+      ) {
+        let message = {
+          conversationId: alreadyConvo[0]._id,
+          author: e.from,
+          text: e.msg,
+        };
+        const newMessage = new MessageData(message);
+        const messageResult = await newMessage.save();
+        app.io.emit("message", { msg: messageResult });
+      } else if (
+        alreadyConvo[0].receiver == e.from &&
+        alreadyConvo[0].creator == e.to
+      ) {
+        let message = {
+          conversationId: alreadyConvo[0]._id,
+          author: e.from,
+          text: e.msg,
+        };
+        const newMessage = new MessageData(message);
+        const messageResult = await newMessage.save();
+        app.io.emit("message", { msg: messageResult });
+      }
     } else {
       let newConversation = {
+        // _id: items._id,
         convoId: e.from,
-        members: [e.from, e.to],
+        receiver: e.to,
         creator: e.from,
       };
       const conversation = new ConversationData(newConversation);
       var result = await conversation.save();
-
       let message = {
+        // _id: result._id,
         conversationId: result._id,
         author: e.from,
         text: e.msg,
