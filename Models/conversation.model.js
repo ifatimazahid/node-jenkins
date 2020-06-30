@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const config = require("config");
-
 const conversationSchema = new mongoose.Schema({
   convoId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -10,7 +9,6 @@ const conversationSchema = new mongoose.Schema({
     required: true,
     ref: "User",
   },
-
   creator: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
@@ -18,7 +16,5 @@ const conversationSchema = new mongoose.Schema({
   },
   createdDate: { type: Date, default: Date.now },
 });
-
 const ConversationData = mongoose.model("conversation", conversationSchema);
-
 exports.ConversationData = ConversationData;

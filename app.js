@@ -51,7 +51,6 @@ app.io.on("connection", async function (client) {
   client.on("message", async (e) => {
     let from = e.from;
     let to = e.to;
-
     let alreadyConvo = await ConversationData.find();
     if (alreadyConvo.length) {
       if (
