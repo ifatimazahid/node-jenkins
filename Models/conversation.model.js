@@ -4,11 +4,10 @@ const conversationSchema = new mongoose.Schema({
   convoId: {
     type: mongoose.Schema.Types.ObjectId,
   },
-  members: {
-    type: [String],
-  },
-  conversationName: {
-    type: String,
+  receiver: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "User",
   },
   creator: {
     type: mongoose.Schema.Types.ObjectId,
