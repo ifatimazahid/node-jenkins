@@ -7,12 +7,12 @@ const conversationSchema = new mongoose.Schema({
   receiver: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-    ref: "User",
+    ref: "users",
   },
   creator: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-    ref: "User",
+    ref: "users",
   },
   createdDate: { type: Date, default: Date.now },
 });

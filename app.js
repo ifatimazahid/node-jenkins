@@ -40,18 +40,59 @@ app.use(function (req, res, next) {
 });
 app.io.on("connection", async function (client) {
   client.on("sign-in", async (e) => {
-    let convo = await ConversationData.find();
-    app.io.emit("getAll", { conversation: convo });
+    await ConversationData.find()
+      .populate({
+        path: "receiver",
+        model: "users",
+      })
+      .populate({
+        path: "creator",
+        model: "users",
+      })
+      .exec(function (err, data) {
+        console.log(data, "ssssssssssssssss");
+        app.io.emit("getAll", { conversation: data });
+      });
   });
-  client.on("getConvo", async (e) => {});
+  client.on("getConvo", async (e) => {
+    let convo = await ConversationData.find();
+
+    // console.log("<>", e);
+
+    convo.map((v) => {
+      if (
+        (v.creator === e.currentUser && v.receiver === e.receiver) ||
+        (v.creator === e.currentUser && v.receiver === v.currentUser)
+      ) {
+        // (v.creator === e.currentUser && v.receiver === e.receiver)
+
+        console.log(v);
+        // app.io.emit("getConversationId", { conversation: convo });
+      }
+    });
+  });
   client.on("filter-messages", async (e) => {
+    console.log("E", e);
+
     let allMessages = await MessageData.find({ conversationId: e });
     app.io.emit("getMessages", allMessages);
   });
   client.on("message", async (e) => {
     let from = e.from;
     let to = e.to;
-    let alreadyConvo = await ConversationData.find();
+    // let alreadyConvo = await ConversationData.find({ creator: from });
+    let alreadyConvo = await ConversationData.find({
+      creator: from,
+      receiver: to,
+    });
+
+    let alreadyChat = await ConversationData.find({
+      creator: to,
+      receiver: from,
+    });
+
+    console.log("alreadyConvo: ", alreadyConvo);
+
     if (alreadyConvo.length) {
       if (
         alreadyConvo[0].creator == e.from &&
@@ -66,11 +107,11 @@ app.io.on("connection", async function (client) {
         const messageResult = await newMessage.save();
         app.io.emit("message", { msg: messageResult });
       } else if (
-        alreadyConvo[0].receiver == e.from &&
-        alreadyConvo[0].creator == e.to
+        alreadyChat[0].receiver == e.from &&
+        alreadyChat[0].creator == e.to
       ) {
         let message = {
-          conversationId: alreadyConvo[0]._id,
+          conversationId: alreadyChat[0]._id,
           author: e.from,
           text: e.msg,
         };
