@@ -71,54 +71,68 @@ app.io.on("connection", async function (client) {
       }
     });
   });
-  client.on("filter-messages", async (e) => {
-    console.log("E", e);
 
-    let allMessages = await MessageData.find({ conversationId: e });
-    app.io.emit("getMessages", allMessages);
+  client.on("filter-messages", async (e) => {
+    // let alreadyConvo = await // ConversationData.find({
+    // //   creator: from,
+    // //   receiver: to,
+    // // });
+    // ConversationData.findById(e);
+    // if (alreadyConvo.creator == userId || alreadyConvo.receiver == userId) {
+      // console.log(alreadyConvo, "oooooooooooo111111111ooooooooooo");
+      let allMessages = await MessageData.find({
+        conversationId: e
+      });
+      app.io.emit("getMessages", allMessages);
+    // }
   });
+
   client.on("message", async (e) => {
     let from = e.from;
     let to = e.to;
     // let alreadyConvo = await ConversationData.find({ creator: from });
-    let alreadyConvo = await ConversationData.find({
-      creator: from,
-      receiver: to,
+
+    let alreadyConvo = await // ConversationData.find({
+    //   creator: from,
+    //   receiver: to,
+    // });
+    ConversationData.find({
+      $and: [
+        {
+          $or: [{ creator: from }, { creator: to }],
+        },
+        { $or: [{ receiver: from }, { receiver: to }] },
+      ],
     });
-
-    let alreadyChat = await ConversationData.find({
-      creator: to,
-      receiver: from,
-    });
-
-    console.log("alreadyConvo: ", alreadyConvo);
-
+    // let alreadyChat = await ConversationData.find({
+    //   creator: to,
+    //   receiver: from,
+    // });
     if (alreadyConvo.length) {
-      if (
-        alreadyConvo[0].creator == e.from &&
-        alreadyConvo[0].receiver == e.to
-      ) {
-        let message = {
-          conversationId: alreadyConvo[0]._id,
-          author: e.from,
-          text: e.msg,
-        };
-        const newMessage = new MessageData(message);
-        const messageResult = await newMessage.save();
-        app.io.emit("message", { msg: messageResult });
-      } else if (
-        alreadyChat[0].receiver == e.from &&
-        alreadyChat[0].creator == e.to
-      ) {
-        let message = {
-          conversationId: alreadyChat[0]._id,
-          author: e.from,
-          text: e.msg,
-        };
-        const newMessage = new MessageData(message);
-        const messageResult = await newMessage.save();
-        app.io.emit("message", { msg: messageResult });
-      }
+      let message = {
+        conversationId: alreadyConvo[0]._id,
+        author: e.from,
+        text: e.msg,
+      };
+      const newMessage = new MessageData(message);
+
+      const messageResult = await newMessage.save();
+      app.io.emit("messageSave", { msg: messageResult });
+
+      // app.io.emit("message", { msg: messageResult });
+      //  else if (
+      //   alreadyChat[0].receiver == e.from &&
+      //   alreadyChat[0].creator == e.to
+      // ) {
+      //   let message = {
+      //     conversationId: alreadyChat[0]._id,
+      //     author: e.from,
+      //     text: e.msg,
+      //   };
+      //   const newMessage = new MessageData(message);
+      //   const messageResult = await newMessage.save();
+      //   app.io.emit("message", { msg: messageResult });
+      // }
     } else {
       let newConversation = {
         // _id: items._id,
@@ -136,7 +150,9 @@ app.io.on("connection", async function (client) {
       };
       const newMessage = new MessageData(message);
       const messageResult = await newMessage.save();
-      app.io.emit("message", { msg: messageResult });
+      app.io.emit("messageSave", { msg: messageResult });
+
+      //
     }
   });
   client.on("disconnect", function () {
