@@ -14,6 +14,7 @@ const app = express();
 
 //***** Post Request for Login *****//
 app.post('/', auth, async (req, res) => {
+console.log("req==========================", req)
     console.log(req.user._id)
     const { error } = validateData(req.body);
 
