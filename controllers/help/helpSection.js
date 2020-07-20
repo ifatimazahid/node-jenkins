@@ -1,5 +1,4 @@
 //***** Modules goes here *****//
-const bcrypt = require('bcryptjs');
 const express = require('express');
 const Joi = require('joi');
 const { HelpData } = require('../../Models/help.model');

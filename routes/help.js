@@ -10,7 +10,9 @@ const app = express.Router();
 
 //~~ Start Driving ~~//
 const helpSection = require('../controllers/help/helpSection');
+const getHelpSection = require('../controllers/help/getHelpSection');
 app.use('/create-section', helpSection);
+app.use('/get-section', getHelpSection);
 
 
 module.exports = app;
