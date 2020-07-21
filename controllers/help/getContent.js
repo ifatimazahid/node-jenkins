@@ -9,7 +9,7 @@ const app = express();
 
 app.get('/', async (req, res) => {
 console.log("req", req)
-    const { error } = validateApiData(req.body);
+    const { error } = validateApiData(req.query);
 
     if (error) {
         var errors = {
@@ -21,7 +21,7 @@ console.log("req", req)
         return;
     }
 
-    const allHelp = await getAllHelp(req.body.cardID)
+    const allHelp = await getAllHelp(req.query.cardID)
 
     var success = {
         success: true,
