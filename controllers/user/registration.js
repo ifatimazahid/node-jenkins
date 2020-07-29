@@ -54,6 +54,7 @@ function validateUserData(userData) {
         email: Joi.string().email({ minDomainAtoms: 2 }).required(),
         mobile: Joi.number(),
         password: Joi.string().min(5),
+        temsAgreed: Joi.boolean().invalid(false),
         gcm_id: Joi.string(),
         platform: Joi.string()
     });

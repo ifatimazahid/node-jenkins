@@ -24,6 +24,10 @@ const userSchema = new mongoose.Schema({
     mobile: {
         type: Number
     },
+    temsAgreed: {
+        type: Boolean,
+        required: true
+    },
     password: {
         type: String,
         required: false,
