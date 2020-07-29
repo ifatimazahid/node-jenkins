@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
     mobile: {
         type: Number
     },
-    temsAgreed: {
+    termsAgreed: {
         type: Boolean,
         required: true
     },
