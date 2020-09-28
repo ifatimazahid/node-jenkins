@@ -1,20 +1,10 @@
 const mongoose = require("mongoose");
 const config = require("config");
 const conversationSchema = new mongoose.Schema({
-  convoId: {
-    type: mongoose.Schema.Types.ObjectId,
-  },
-  receiver: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: "users",
-  },
-  creator: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true,
-    ref: "users",
-  },
   createdDate: { type: Date, default: Date.now },
-});
-const ConversationData = mongoose.model("conversation", conversationSchema);
+  // usersInfo: {
+  //   type: [Object]
+  // }
+},{ strict: false });
+const ConversationData = mongoose.model("chatRooms", conversationSchema);
 exports.ConversationData = ConversationData;

@@ -39,133 +39,167 @@ app.use(function (req, res, next) {
   next(createError(404));
 });
 app.io.on("connection", async function (client) {
-  client.on("sign-in", async (e) => {
-    await ConversationData.find()
-      .populate({
-        path: "receiver",
-        model: "users",
-      })
-      .populate({
-        path: "creator",
-        model: "users",
-      })
-      .exec(function (err, data) {
-        console.log(data, "ssssssssssssssss");
-        app.io.emit("getAll", { conversation: data });
-      });
-  });
-  client.on("getConvo", async (e) => {
-    let convo = await ConversationData.find();
 
-    // console.log("<>", e);
+  client.on('createRoom', async (e) => {
+    const roomData = {}
+    e.forEach(user => roomData[user._id] = true)
+    roomData.usersInfo = e
+    console.log("roomData", roomData)
+  const newRoom = new ConversationData(roomData);
+  client.emit('getRoom', newRoom )
+  const roomResult = await newRoom.save();
+  console.log("roomResult", roomResult)
+  })
 
-    convo.map((v) => {
-      if (
-        (v.creator === e.currentUser && v.receiver === e.receiver) ||
-        (v.creator === e.currentUser && v.receiver === v.currentUser)
-      ) {
-        // (v.creator === e.currentUser && v.receiver === e.receiver)
+  client.on('sentMsg', async (msg) => {
+   const newMessage = new MessageData(msg);
+    await newMessage.save();
+    let allMessages = await MessageData.find({roomId: msg.roomId});
+    console.log("allMessages", allMessages)
+    app.io.emit("getMessages", allMessages);
+  })
+  
+  client.on('findMsgs', async (roomId) => {
+    console.log("findMsgs--", roomId)
+    let allMessages = await MessageData.find({roomId});
+    app.io.emit("getMessages", allMessages);
+  })
 
-        console.log(v);
-        // app.io.emit("getConversationId", { conversation: convo });
-      }
-    });
-  });
+  client.on('find-rooms', async id => {
+  console.log("getRooms -- > ayan -- > id", id)
+    const allRooms = await ConversationData.find({[id]: true})
+    console.log("allRooms", allRooms[0])
+    client.emit('getRooms', allRooms)
+  })
 
-  client.on("filter-messages", async (e) => {
-    // let alreadyConvo = await // ConversationData.find({
-    // //   creator: from,
-    // //   receiver: to,
-    // // });
-    // ConversationData.findById(e);
-    // if (alreadyConvo.creator == userId || alreadyConvo.receiver == userId) {
-      // console.log(alreadyConvo, "oooooooooooo111111111ooooooooooo");
-      let allMessages = await MessageData.find({
-        conversationId: e
-      });
-      app.io.emit("getMessages", allMessages);
-    // }
-  });
+  // client.on("sign-in", async (e) => {
+  //   await ConversationData.find()
+  //     .populate({
+  //       path: "receiver",
+  //       model: "users",
+  //     })
+  //     .populate({
+  //       path: "creator",
+  //       model: "users",
+  //     })
+  //     .exec(function (err, data) {
+  //       console.log(data, "ssssssssssssssss");
+  //       app.io.emit("getAll", { conversation: data });
+  //     });
+  // });
+  // client.on("getConvo", async (e) => {
+  //   let convo = await ConversationData.find();
 
-  client.on("message", async (e) => {
-    let from = e.from;
-    let to = e.to;
-    // let alreadyConvo = await ConversationData.find({ creator: from });
+  //   // console.log("<>", e);
 
-    let alreadyConvo = await // ConversationData.find({
-    //   creator: from,
-    //   receiver: to,
-    // });
-    ConversationData.find({
-      $and: [
-        {
-          $or: [{ creator: from }, { creator: to }],
-        },
-        { $or: [{ receiver: from }, { receiver: to }] },
-      ],
-    });
-    // let alreadyChat = await ConversationData.find({
-    //   creator: to,
-    //   receiver: from,
-    // });
-    if (alreadyConvo.length) {
-      let message = {
-        conversationId: alreadyConvo[0]._id,
-        author: e.from,
-        text: e.msg,
-      };
-      const newMessage = new MessageData(message);
+  //   convo.map((v) => {
+  //     if (
+  //       (v.creator === e.currentUser && v.receiver === e.receiver) ||
+  //       (v.creator === e.currentUser && v.receiver === v.currentUser)
+  //     ) {
+  //       // (v.creator === e.currentUser && v.receiver === e.receiver)
 
-      const messageResult = await newMessage.save();
-      app.io.emit("messageSave", { msg: messageResult });
+  //       console.log(v);
+  //       // app.io.emit("getConversationId", { conversation: convo });
+  //     }
+  //   });
+  // });
 
-      // app.io.emit("message", { msg: messageResult });
-      //  else if (
-      //   alreadyChat[0].receiver == e.from &&
-      //   alreadyChat[0].creator == e.to
-      // ) {
-      //   let message = {
-      //     conversationId: alreadyChat[0]._id,
-      //     author: e.from,
-      //     text: e.msg,
-      //   };
-      //   const newMessage = new MessageData(message);
-      //   const messageResult = await newMessage.save();
-      //   app.io.emit("message", { msg: messageResult });
-      // }
-    } else {
-      let newConversation = {
-        // _id: items._id,
-        convoId: e.from,
-        receiver: e.to,
-        creator: e.from,
-      };
-      const conversation = new ConversationData(newConversation);
-      var result = await conversation.save();
-      let message = {
-        // _id: result._id,
-        conversationId: result._id,
-        author: e.from,
-        text: e.msg,
-      };
-      const newMessage = new MessageData(message);
-      const messageResult = await newMessage.save();
-      app.io.emit("messageSave", { msg: messageResult });
+  // client.on("filter-messages", async (e) => {
+  //   // let alreadyConvo = await // ConversationData.find({
+  //   // //   creator: from,
+  //   // //   receiver: to,
+  //   // // });
+  //   // ConversationData.findById(e);
+  //   // if (alreadyConvo.creator == userId || alreadyConvo.receiver == userId) {
+  //     // console.log(alreadyConvo, "oooooooooooo111111111ooooooooooo");
+  //     let allMessages = await MessageData.find({
+  //       conversationId: e
+  //     });
+  //     app.io.emit("getMessages", allMessages);
+  //   // }
+  // });
 
-      //
-    }
-  });
-  client.on("disconnect", function () {
-    if (!client.user_id || !clients[client.user_id]) {
-      return;
-    }
-    let targetClients = clients[client.user_id];
-    for (let i = 0; i < targetClients.length; ++i) {
-      if (targetClients[i] == client) {
-        targetClients.splice(i, 1);
-      }
-    }
-  });
+  // client.on("message", async (e) => {
+  //   let from = e.from;
+  //   let to = e.to;
+  //   // let alreadyConvo = await ConversationData.find({ creator: from });
+
+  //   let alreadyConvo = await // ConversationData.find({
+  //   //   creator: from,
+  //   //   receiver: to,
+  //   // });
+  //   ConversationData.find({
+  //     $and: [
+  //       {
+  //         $or: [{ creator: from }, { creator: to }],
+  //       },
+  //       { $or: [{ receiver: from }, { receiver: to }] },
+  //     ],
+  //   });
+  //   // let alreadyChat = await ConversationData.find({
+  //   //   creator: to,
+  //   //   receiver: from,
+  //   // });
+  //   if (alreadyConvo.length) {
+  //     let message = {
+  //       conversationId: alreadyConvo[0]._id,
+  //       author: e.from,
+  //       text: e.msg,
+  //     };
+  //     const newMessage = new MessageData(message);
+
+  //     const messageResult = await newMessage.save();
+  //     app.io.emit("messageSave", { msg: messageResult });
+
+  //     // app.io.emit("message", { msg: messageResult });
+  //     //  else if (
+  //     //   alreadyChat[0].receiver == e.from &&
+  //     //   alreadyChat[0].creator == e.to
+  //     // ) {
+  //     //   let message = {
+  //     //     conversationId: alreadyChat[0]._id,
+  //     //     author: e.from,
+  //     //     text: e.msg,
+  //     //   };
+  //     //   const newMessage = new MessageData(message);
+  //     //   const messageResult = await newMessage.save();
+  //     //   app.io.emit("message", { msg: messageResult });
+  //     // }
+  //   } else {
+  //     let newConversation = {
+  //       // _id: items._id,
+  //       convoId: e.from,
+  //       receiver: e.to,
+  //       creator: e.from,
+  //     };
+  //     const conversation = new ConversationData(newConversation);
+  //     var result = await conversation.save();
+  //     let message = {
+  //       // _id: result._id,
+  //       conversationId: result._id,
+  //       author: e.from,
+  //       text: e.msg,
+  //     };
+  //     const newMessage = new MessageData(message);
+  //     const messageResult = await newMessage.save();
+  //     app.io.emit("messageSave", { msg: messageResult });
+
+  //     //
+  //   }
+  // });
+  // client.on("disconnect", function () {
+  //   if (!client.user_id || !clients[client.user_id]) {
+  //     return;
+  //   }
+  //   let targetClients = clients[client.user_id];
+  //   for (let i = 0; i < targetClients.length; ++i) {
+  //     if (targetClients[i] == client) {
+  //       targetClients.splice(i, 1);
+  //     }
+  //   }
+  // });
+
 });
 // error handler
 app.use(function (err, req, res, next) {
