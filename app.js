@@ -53,9 +53,10 @@ app.io.on("connection", async function (client) {
 
   client.on('sentMsg', async (msg) => {
    const newMessage = new MessageData(msg);
-    await newMessage.save();
+    const res = await newMessage.save();
+    console.log("resaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", res)
+    app.io.emit('newChat', res )
     let allMessages = await MessageData.find({roomId: msg.roomId});
-    console.log("allMessages", allMessages)
     app.io.emit("getMessages", allMessages);
   })
   
