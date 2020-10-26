@@ -42,13 +42,25 @@ app.io.on("connection", async function (client) {
 
   client.on('createRoom', async (e) => {
     const roomData = {}
-    e.forEach(user => roomData[user._id] = true)
-    roomData.usersInfo = e
+    e.users.forEach(user => roomData[user._id] = true)
+    if(e.roomType == 'ptp') {
+      const isFoundRoom = await ConversationData.findOne({...roomData, roomType:'ptp'})
+      if(isFoundRoom) {
+        client.emit('getRoom', isFoundRoom )
+        return
+      }
+    }
+    roomData.usersInfo = e.users
+    roomData.roomType = e.roomType
+    if(e.roomType == 'group') {
+      roomData.roomName = e.roomName
+    }
     console.log("roomData", roomData)
-  const newRoom = new ConversationData(roomData);
-  client.emit('getRoom', newRoom )
-  const roomResult = await newRoom.save();
-  console.log("roomResult", roomResult)
+    const newRoom = new ConversationData(roomData);
+    console.log("newRoom-----------", newRoom)
+    client.emit('getRoom', newRoom )
+    const roomResult = await newRoom.save();
+    console.log("roomResult", roomResult)
   })
 
   client.on('sentMsg', async (msg) => {
