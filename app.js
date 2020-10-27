@@ -66,10 +66,20 @@ app.io.on("connection", async function (client) {
   client.on('sentMsg', async (msg) => {
    const newMessage = new MessageData(msg);
     const res = await newMessage.save();
-    console.log("resaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", res)
-    app.io.emit('newChat', res )
-    let allMessages = await MessageData.find({roomId: msg.roomId});
-    app.io.emit("getMessages", allMessages);
+    if(res.type == 'audioCall' || res.type == 'videoCall') {
+      const roomData = await ConversationData.findOne({_id : res.roomId})
+      let data = {
+        roomData,
+        ...res._doc
+      }
+      app.io.emit('newChat', data )
+      let allMessages = await MessageData.find({roomId: msg.roomId});
+      app.io.emit("getMessages", allMessages);
+    } else {
+        app.io.emit('newChat', res )
+        let allMessages = await MessageData.find({roomId: msg.roomId});
+        app.io.emit("getMessages", allMessages);
+    }
   })
   
   client.on('findMsgs', async (roomId) => {
