@@ -2,6 +2,7 @@
 //***** Modules goes here *****//
 const express = require('express');
 const { MessageData } = require('../../Models/mesage.model');
+const { ConversationData } = require('../../Models/conversation.model');
 const Joi = require('joi');
 
 
@@ -31,13 +32,14 @@ app.get('/', async (req, res) => {
 })
 
 async function getUserCallHisory(userId) {
-    const allPlaces = await MessageData.find({userId, $or: [{type: 'audioCall'}, {type: 'videoCall'}]})
-    .populate({
-        path: 'roomId',
-        model: 'chatRooms'
-    });
-    console.log("getAllHelp -> allPlaces", allPlaces)
-    return allPlaces
+
+    let allPlaces = await ConversationData.find({[userId]: true})
+    allPlaces = allPlaces.map(val =>  val._id.toString() )
+    let data = await MessageData.find({
+        roomId: {  $in: allPlaces },
+        $or: [{type: 'audioCall'}, {type: 'videoCall'}]
+    })
+    return data
 }
 
 function validateApiData(req) {
