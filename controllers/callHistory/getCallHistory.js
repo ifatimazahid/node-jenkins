@@ -33,13 +33,13 @@ app.get('/', async (req, res) => {
 
 async function getUserCallHisory(userId) {
 
-    let allPlaces = await ConversationData.find({[userId]: true})
-    allPlaces = allPlaces.map(val =>  val._id.toString() )
+    let roomsData = await ConversationData.find({[userId]: true})
+    let IDs = roomsData.map(val =>  val._id.toString() )
     let data = await MessageData.find({
-        roomId: {  $in: allPlaces },
+        roomId: {  $in: IDs },
         $or: [{type: 'audioCall'}, {type: 'videoCall'}]
     })
-    return data
+    return {callHistory: data, roomsData}
 }
 
 function validateApiData(req) {
