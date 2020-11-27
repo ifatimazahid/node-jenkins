@@ -91,7 +91,31 @@ app.io.on("connection", async function (client) {
   client.on('find-rooms', async id => {
   console.log("getRooms -- > ayan -- > id", id)
     const allRooms = await ConversationData.find({[id]: true})
-    console.log("allRooms", allRooms[0])
+    const IDs = []
+    allRooms.forEach(val => {
+      const datas = JSON.parse(JSON.stringify(val))
+      datas.usersInfo.forEach(val => {
+        if(IDs.includes(val._id)) return
+        IDs.push(val._id)
+      })
+    })
+
+    const userData = await UserData.find({ _id: { $in: IDs}})
+    
+    const newAllRooms = []
+    allRooms.forEach(val => {
+      const datas = JSON.parse(JSON.stringify(val))
+      var newUsersInfo = []
+      datas.usersInfo.forEach(val => {
+        userData.forEach(jl => {
+          if(jl._id == val._id){
+            newUsersInfo.push(jl)
+          }
+        })
+      })
+      datas.usersInfo = newUsersInfo
+      newAllRooms.push(datas)
+    })
     client.emit('getRooms', allRooms)
   })
 
