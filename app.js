@@ -116,7 +116,7 @@ app.io.on("connection", async function (client) {
       datas.usersInfo = newUsersInfo
       newAllRooms.push(datas)
     })
-    client.emit('getRooms', allRooms)
+    client.emit('getRooms', newAllRooms)
   })
 
   // client.on("sign-in", async (e) => {
