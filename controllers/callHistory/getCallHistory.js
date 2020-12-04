@@ -3,6 +3,8 @@
 const express = require('express');
 const { MessageData } = require('../../Models/mesage.model');
 const { ConversationData } = require('../../Models/conversation.model');
+const { UserData } = require("../../Models/user.model");
+
 const Joi = require('joi');
 
 
@@ -34,12 +36,39 @@ app.get('/', async (req, res) => {
 async function getUserCallHisory(userId) {
 
     let roomsData = await ConversationData.find({[userId]: true})
-    let IDs = roomsData.map(val =>  val._id.toString() )
+    let IDss = roomsData.map(val =>  val._id.toString() )
     let data = await MessageData.find({
-        roomId: {  $in: IDs },
+        roomId: {  $in: IDss },
         $or: [{type: 'audioCall'}, {type: 'videoCall'}]
     })
-    return {callHistory: data, roomsData}
+
+    const IDs = []
+    roomsData.forEach(val => {
+      const datas = JSON.parse(JSON.stringify(val))
+      datas.usersInfo.forEach(val => {
+        if(IDs.includes(val._id)) return
+        IDs.push(val._id)
+      })
+    })
+
+    const userData = await UserData.find({ _id: { $in: IDs}})
+    
+    const newAllRooms = []
+    roomsData.forEach(val => {
+      const datas = JSON.parse(JSON.stringify(val))
+      var newUsersInfo = []
+      datas.usersInfo.forEach(val => {
+        userData.forEach(jl => {
+          if(jl._id == val._id){
+            newUsersInfo.push(jl)
+          }
+        })
+      })
+      datas.usersInfo = newUsersInfo
+      newAllRooms.push(datas)
+    })
+
+    return {callHistory: data, roomsData: newAllRooms}
 }
 
 function validateApiData(req) {
