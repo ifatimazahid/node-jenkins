@@ -37,7 +37,7 @@ app.post('/', (req, res)=> {
         }
         else {
             var data = _.pick(response, ['_id', 'firstName','lastName', 'mobile', 'liked_stores', 'email','profile_img', 'createdDate', 'access_token']);
-            data.profile_img =`${url}${data.profile_img}`
+            data.profile_img =`${data.profile_img}`
             var success = {
                 success:true,
                 msg:'User Found',
