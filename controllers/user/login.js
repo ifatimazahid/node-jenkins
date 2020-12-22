@@ -36,7 +36,7 @@ app.post('/', (req, res)=> {
             res.status(400).send(errors);
         }
         else {
-            var data = _.pick(response, ['_id', 'firstName','lastName', 'mobile', 'liked_stores', 'email','profile_img', 'createdDate', 'access_token']);
+            var data = _.pick(response, ['_id', 'firstName','lastName', 'mobile', 'liked_stores', 'email','profile_img', 'createdDate', 'access_token', 'bio']);
             data.profile_img =`${data.profile_img}`
             var success = {
                 success:true,
