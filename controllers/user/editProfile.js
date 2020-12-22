@@ -119,13 +119,15 @@ function validateUserData(userData) {
 async function checkUser(body, profile, url) {
   console.log(profile, "profile")
   if (profile) {
+    console.log("🚀 ~ file: editProfile.js ~ line 122 ~ checkUser ~ profile", profile)
     const imageUrl = await uploadDb(profile.path, 'image')
+    console.log("🚀 ~ file: editProfile.js ~ line 124 ~ checkUser ~ imageUrl", imageUrl)
     body.profile_img = imageUrl.url
   }
   if(!body.profile_img){
     body.profile_img = 'host/public/images/user.png'
   }
-  body.profile_img = body.profile_img.slice(body.profile_img.indexOf("public")-5, body.profile_img.length);
+  // body.profile_img = body.profile_img.slice(body.profile_img.indexOf("public")-5, body.profile_img.length);
   
   const update = await UserData.findByIdAndUpdate(body._id, {
     $set: body
