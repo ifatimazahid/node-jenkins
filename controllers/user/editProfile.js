@@ -5,12 +5,22 @@ const Joi = require('joi');
 const { UserData } = require('../../Models/user.model');
 const multer = require("multer");
 const auth = require('../../middleware/auth');
+const cloudinary = require('cloudinary')
+
 const crypto = require('crypto');
 //***** ///// *****//
 const DIR = './public/images';
 //***** Express Router to export in module *****//
 const app = express();
 //***** ///// *****//
+
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+})
+
+
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, DIR); // for folder name
@@ -34,6 +44,21 @@ const fileFilter = (req, file, cb) => {
     cb(null, false);
   }
 };
+
+const uploadDb = (file, folder) => {
+  return new Promise(resolve => {
+      cloudinary.uploader.upload(file, (result) => {
+      resolve({
+          url: result.url,
+          id: result.public_id
+      })
+      }, {
+      resource_type: "auto",
+      folder: folder
+      })
+  })
+  }
+
 var upload = multer({ storage: fileStorage, fileFilter: fileFilter })
 //***** Post Request for Login *****//
 app.post('/', auth, upload.single('profile_img'), (req, res) => {
@@ -94,7 +119,8 @@ function validateUserData(userData) {
 async function checkUser(body, profile, url) {
   console.log(profile, "profile")
   if (profile) {
-    body.profile_img = url + 'host/public/images/' + profile.filename
+    const imageUrl = await uploadDb(profile, 'image')
+    body.profile_img = imageUrl.url
   }
   if(!body.profile_img){
     body.profile_img = 'host/public/images/user.png'
