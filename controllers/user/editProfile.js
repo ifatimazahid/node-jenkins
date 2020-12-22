@@ -119,7 +119,7 @@ function validateUserData(userData) {
 async function checkUser(body, profile, url) {
   console.log(profile, "profile")
   if (profile) {
-    const imageUrl = await uploadDb(profile, 'image')
+    const imageUrl = await uploadDb(profile.path, 'image')
     body.profile_img = imageUrl.url
   }
   if(!body.profile_img){
