@@ -39,7 +39,7 @@ app.get('/', async (req, res) => {
     if (getParties.length <= 0) {
       var error = {
         success: false,
-        msg: 'No Parties found!',
+        msg: 'No Party found!',
         data: ''
       };
       res.status(500).send(error);
