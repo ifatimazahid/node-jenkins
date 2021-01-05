@@ -1,8 +1,9 @@
 
 //***** Modules goes here *****//
 const express = require('express');
+const { number } = require('joi');
 const { PartyData } = require('../../Models/party.model');
-
+const { UserData } = require('../../Models/user.model');
 
 const app = express();
 
@@ -11,20 +12,17 @@ app.get('/', async (req, res) => {
   try {
     let getParties;
     if (req.query.userId != null && req.query.partyId == null) {
-      getParties = await PartyData.find({ "members.userId": req.query.userId })
+
+      const user = await UserData.findOne({ _id: req.query.userId });
+      getParties = await PartyData.find({ "members.phone": user.mobile })
         .sort({ createdDate: -1 })
-        .populate({
-          path: "members.userId",
-          model: "users"
-        });
+
     }
     else if (req.query.userId == null && req.query.partyId != null) {
-      getParties = await PartyData.find({ _id: req.query.partyId })
+
+      getParties = await PartyData.findOne({ _id: req.query.partyId })
         .sort({ createdDate: -1 })
-        .populate({
-          path: "members.userId",
-          model: "users"
-        });
+
     }
     else {
       var error = {
@@ -36,7 +34,7 @@ app.get('/', async (req, res) => {
       return;
     }
 
-    if (getParties.length <= 0) {
+    if (getParties.length == 0) {
       var error = {
         success: false,
         msg: 'No Party found!',

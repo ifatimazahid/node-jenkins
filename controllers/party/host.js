@@ -50,11 +50,14 @@ async function hostParty(req) {
 function validateApiData(body) {
   const schema = Joi.object().keys({
     event_name: Joi.string().required(),
+    date: Joi.date().required(),
+    from_time: Joi.string().regex(/\b((1[0-2]|0?[1-9]):([0-5][0-9]))/).required(),
+    till_time: Joi.string().regex(/\b((1[0-2]|0?[1-9]):([0-5][0-9]))/).required(),
+    latitude: Joi.string().required(),
+    longitude: Joi.string().required(),
     members: Joi.array().items(
       Joi.object({
-        userId: Joi.string().required(),
-        latitude: Joi.string().required(),
-        longitude: Joi.string().required(),
+        phone: Joi.number().required(),
         isOwner: Joi.boolean().required()
       })
     )
