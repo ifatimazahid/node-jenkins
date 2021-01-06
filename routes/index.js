@@ -4,6 +4,7 @@ const placesRouter = require('./places');
 const helpRouter = require('./help');
 const passwordRouter = require('./resetPassword');
 const callHistoryRouter = require('./callHistory');
+const partyRouter = require('./hostParty');
 var app = express();
 /* GET home page. */
 
@@ -12,4 +13,5 @@ app.use('/password', passwordRouter);
 app.use('/places', placesRouter);
 app.use('/help', helpRouter);
 app.use('/callHistory', callHistoryRouter);
+app.use('/party', partyRouter);
 module.exports = app;
