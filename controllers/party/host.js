@@ -1,43 +1,63 @@
 
 //***** Modules goes here *****//
 const express = require('express');
-const { UserData } = require("../../Models/user.model");
-
 const Joi = require('joi');
 const { PartyData } = require('../../Models/party.model');
+const upload = require("../../constants/multer");
+const cloudinary = require("../../constants/cloudinary");
+const fs = require("fs");
 
 
 const app = express();
 
-app.post('/', async (req, res) => {
-  const { error } = validateApiData(req.body);
+app.post('/',
+  upload.fields([{ name: "image" }]),
+  async (req, res) => {
+    const { error } = validateApiData(req.body);
 
-  if (error) {
-    var errors = {
-      success: false,
-      msg: error.name,
-      data: error.details[0].message
+    if (error) {
+      var errors = {
+        success: false,
+        msg: error.name,
+        data: error.details[0].message
+      };
+      res.status(403).send(errors);
+      return;
+    }
+
+    const file = req.files.image;
+    if (file == null) {
+      var errors = {
+        success: false,
+        msg: 'Party Image is required'
+      };
+      res.status(403).send(errors);
+      return;
+    }
+
+    const image = async (path) => await cloudinary.uploads(path, "partyImage");
+    const img = req.files.image[0];
+    const { path } = img;
+    const imgURL = await image(path);
+    fs.unlinkSync(path);
+    req.body.image = imgURL.url;
+    const hostAParty = await hostParty(req.body)
+
+    var success = {
+      success: true,
+      msg: 'Party created successfully!',
+      data: hostAParty
     };
-    res.status(403).send(errors);
+    res.send(success);
     return;
-  }
+  })
 
-  const hostAParty = await hostParty(req)
-
-  var success = {
-    success: true,
-    msg: 'Party created successfully!',
-    data: hostAParty
-  };
-  res.send(success);
-  return;
-})
-
-async function hostParty(req) {
+async function hostParty(body) {
   return new Promise((resolve, reject) => {
 
+    // console.log(body, '//////////')
     try {
-      const party = new PartyData(req.body);
+      const party = new PartyData(body);
       const result = party.save();
       resolve(result);
     }
