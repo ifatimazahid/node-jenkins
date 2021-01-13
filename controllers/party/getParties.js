@@ -25,11 +25,7 @@ app.get('/', auth, async (req, res) => {
   try {
     let getParties;
     const user = await UserData.findOne({ _id: req.query.userId });
-    // if (req.query.userId != null && req.query.partyId == null) {
-    //   getParties = await PartyData.find({ "members.phone": user.mobile })
-    //     .sort({ createdDate: -1 });
-    // }
-    // else if (req.query.userId == null && req.query.partyId != null) {
+    if (req.query.partyId != null) {
 
       await updateLocation(req)
         .then(async (rest) => {
@@ -38,8 +34,6 @@ app.get('/', auth, async (req, res) => {
           phoneNumbers = rest.members.map((m) => {
             return m.phone;
           })
-
-          console.log(phoneNumbers, 'LLLLLLLLLLLL')
 
           const user = await UserData.find({
             mobile: {
@@ -68,17 +62,34 @@ app.get('/', auth, async (req, res) => {
           res.status(500).send(exc);
           return;
         })
+    }
+    else {
+      const party = await PartyData.find({ "members.phone": user.mobile });
 
-    // }
-    // else {
-    //   errors = {
-    //     success: false,
-    //     msg: 'Please enter User OR Party ID',
-    //     data: ''
-    //   };
-    //   res.status(500).send(errors);
-    //   return;
-    // }
+
+      const checkUser =
+        // party.map((part) => {
+        //   let newPartyObj = {};
+         user.map((userData) => {
+            let newObj = {};
+            party.members.forEach((memberData) => {
+              if (userData.mobile == memberData.phone) {
+                let a = JSON.parse(JSON.stringify(userData));
+                a.isOwner = memberData.isOwner;
+                a.latitude = memberData.latitude;
+                a.longitude = memberData.longitude;
+                newObj = a;
+              }
+            })
+            return newObj;
+          })
+
+        //   console.log(newPartyObj, '::::::::::::::')
+        //   return newPartyObj;
+        // })
+
+      getParties = checkUser;
+    }
 
     if (getParties.length == 0) {
       errors = {
