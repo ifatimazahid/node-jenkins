@@ -25,11 +25,11 @@ app.get('/', auth, async (req, res) => {
   try {
     let getParties;
     const user = await UserData.findOne({ _id: req.query.userId });
-    if (req.query.userId != null && req.query.partyId == null) {
-      getParties = await PartyData.find({ "members.phone": user.mobile })
-        .sort({ createdDate: -1 });
-    }
-    else if (req.query.userId == null && req.query.partyId != null) {
+    // if (req.query.userId != null && req.query.partyId == null) {
+    //   getParties = await PartyData.find({ "members.phone": user.mobile })
+    //     .sort({ createdDate: -1 });
+    // }
+    // else if (req.query.userId == null && req.query.partyId != null) {
 
       await updateLocation(req)
         .then(async (rest) => {
@@ -69,16 +69,16 @@ app.get('/', auth, async (req, res) => {
           return;
         })
 
-    }
-    else {
-      errors = {
-        success: false,
-        msg: 'Please enter User OR Party ID',
-        data: ''
-      };
-      res.status(500).send(errors);
-      return;
-    }
+    // }
+    // else {
+    //   errors = {
+    //     success: false,
+    //     msg: 'Please enter User OR Party ID',
+    //     data: ''
+    //   };
+    //   res.status(500).send(errors);
+    //   return;
+    // }
 
     if (getParties.length == 0) {
       errors = {
