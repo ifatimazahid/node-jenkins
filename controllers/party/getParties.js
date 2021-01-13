@@ -31,8 +31,33 @@ app.get('/', auth, async (req, res) => {
     }
     else if (req.query.userId == null && req.query.partyId != null) {
 
-      getParties = await PartyData.findOne({ _id: req.query.partyId })
-        .sort({ createdDate: -1 })
+      let phoneNumbers = [];
+      party = await PartyData.findOne({ _id: req.query.partyId });
+
+      phoneNumbers = party.members.map((m) => {
+        return m.phone;
+      })
+
+      const user = await UserData.find({
+        mobile: {
+          $in: phoneNumbers
+        }
+      })
+        .select('_id firstName lastName email mobile profile_img');
+
+      const checkUser = user.map((userData) => {
+        let newObj = {};
+        party.members.forEach((memberData) => {
+          if (userData.mobile == memberData.phone) {
+            let a = JSON.parse(JSON.stringify(userData));
+            a.isOwner = memberData.isOwner;
+            newObj = a;
+          }
+        })
+        return newObj;
+      })
+
+      getParties = checkUser;
 
     }
     else {
