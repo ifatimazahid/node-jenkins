@@ -16,9 +16,9 @@ app.use('/getParties', getParties);
 const host = require('../controllers/party/host');
 app.use('/host', host);
 
-//~~ Edit a party ~~//
-// const edit = require('../controllers/party/edit');
-// app.use('/edit', edit);
+// ~~ Accept / Reject a party ~~//
+const edit = require('../controllers/party/changeStatus');
+app.use('/changeStatus', edit);
 
 //~~ Host a party ~~//
 const deleteParty = require('../controllers/party/delete');
