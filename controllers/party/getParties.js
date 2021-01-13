@@ -31,33 +31,43 @@ app.get('/', auth, async (req, res) => {
     }
     else if (req.query.userId == null && req.query.partyId != null) {
 
-      let phoneNumbers = [];
-      party = await PartyData.findOne({ _id: req.query.partyId });
+      await updateLocation(req)
+        .then(async (rest) => {
 
-      phoneNumbers = party.members.map((m) => {
-        return m.phone;
-      })
+          let phoneNumbers = [];
+          phoneNumbers = rest.members.map((m) => {
+            return m.phone;
+          })
 
-      const user = await UserData.find({
-        mobile: {
-          $in: phoneNumbers
-        }
-      })
-        .select('_id firstName lastName email mobile profile_img');
+          console.log(phoneNumbers, 'LLLLLLLLLLLL')
 
-      const checkUser = user.map((userData) => {
-        let newObj = {};
-        party.members.forEach((memberData) => {
-          if (userData.mobile == memberData.phone) {
-            let a = JSON.parse(JSON.stringify(userData));
-            a.isOwner = memberData.isOwner;
-            newObj = a;
-          }
+          const user = await UserData.find({
+            mobile: {
+              $in: phoneNumbers
+            }
+          })
+            .select('_id firstName lastName email mobile profile_img');
+
+          const checkUser = user.map((userData) => {
+            let newObj = {};
+            rest.members.forEach((memberData) => {
+              if (userData.mobile == memberData.phone) {
+                let a = JSON.parse(JSON.stringify(userData));
+                a.isOwner = memberData.isOwner;
+                a.latitude = memberData.latitude;
+                a.longitude = memberData.longitude;
+                newObj = a;
+              }
+            })
+            return newObj;
+          })
+
+          getParties = checkUser;
         })
-        return newObj;
-      })
-
-      getParties = checkUser;
+        .catch((exc) => {
+          res.status(500).send(exc);
+          return;
+        })
 
     }
     else {
@@ -80,21 +90,13 @@ app.get('/', auth, async (req, res) => {
       return;
     }
 
-    await updateLocation(req)
-      .then((rest) => {
-       getParties = rest;
-        var success = {
-          success: true,
-          msg: 'Party Found!',
-          data: getParties
-        };
-        res.send(success);
-        return;
-      })
-      .catch((exc) => {
-        res.status(500).send(exc);
-        return;
-      })
+    var success = {
+      success: true,
+      msg: 'Party Found!',
+      data: getParties
+    };
+    res.send(success);
+    return;
 
   } catch (err) {
     return { success: false, error: err, data: null };
@@ -119,8 +121,6 @@ async function updateLocation(req) {
         "members.status": 1 //accepted parties only
       }
     }
-
-    console.log(findFromObj, 'LLLLLLLLLLLL')
 
     await PartyData.findOneAndUpdate(findFromObj,
       {
