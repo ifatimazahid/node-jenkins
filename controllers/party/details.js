@@ -12,7 +12,7 @@ app.get('/', auth, async (req, res) => {
 
   try {
     var errors;
-    if (req.query.partyId != null) {
+    if (req.params.partyId != null) {
       errors = {
         success: false,
         msg: 'Please enter Party ID!'
@@ -80,7 +80,7 @@ app.get('/', auth, async (req, res) => {
           return newObj;
         })
 
-        getParties = checkUser;
+        getParties = { members_details: checkUser, party_details: rest };
       })
       .catch((exc) => {
         res.status(500).send(exc);
@@ -115,21 +115,10 @@ async function updateLocation(req) {
 
     const getUser = await UserData.findOne({ _id: req.user._id });
 
-    let findFromObj = {};
-    if (req.query.partyId) {
-      findFromObj = {
-        _id: req.query.partyId,
-        "members.phone": getUser.mobile
-      }
-    }
-    else {
-      findFromObj = {
-        "members.phone": getUser.mobile,
-        "members.status": 1 //accepted parties only
-      }
-    }
-
-    await PartyData.findOneAndUpdate(findFromObj,
+    await PartyData.findOneAndUpdate({
+      _id: req.query.partyId,
+      "members.phone": getUser.mobile
+    },
       {
         $set: {
           "members.$.latitude": req.body.latitude,
