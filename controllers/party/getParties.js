@@ -24,12 +24,10 @@ app.get('/', auth, async (req, res) => {
 
   try {
     let getParties;
-    const user = await UserData.findOne({ _id: req.query.userId });
-    // if (req.query.userId != null && req.query.partyId == null) {
-    //   getParties = await PartyData.find({ "members.phone": user.mobile })
-    //     .sort({ createdDate: -1 });
-    // }
-    // else if (req.query.userId == null && req.query.partyId != null) {
+    const user = await UserData.findOne({ _id: req.query.userId })
+      .select('_id firstName lastName email mobile profile_img');
+
+    if (req.query.partyId != null) {
 
       await updateLocation(req)
         .then(async (rest) => {
@@ -38,8 +36,6 @@ app.get('/', auth, async (req, res) => {
           phoneNumbers = rest.members.map((m) => {
             return m.phone;
           })
-
-          console.log(phoneNumbers, 'LLLLLLLLLLLL')
 
           const user = await UserData.find({
             mobile: {
@@ -56,6 +52,21 @@ app.get('/', auth, async (req, res) => {
                 a.isOwner = memberData.isOwner;
                 a.latitude = memberData.latitude;
                 a.longitude = memberData.longitude;
+                let member_dis = distance(
+                  req.body.latitude,
+                  req.body.longitude,
+                  memberData.latitude,
+                  memberData.longitude
+                );
+
+                let party_dis = distance(
+                  req.body.latitude,
+                  req.body.longitude,
+                  rest.latitude,
+                  rest.longitude
+                );
+                a.party_distance = party_dis ? party_dis + " kms" : 'No location provided',
+                  a.member_distance = member_dis ? member_dis + " kms" : 'No location provided';
                 newObj = a;
               }
             })
@@ -68,17 +79,66 @@ app.get('/', auth, async (req, res) => {
           res.status(500).send(exc);
           return;
         })
+    }
+    else {
+      const party = await PartyData.find({ "members.phone": user.mobile });
 
-    // }
-    // else {
-    //   errors = {
-    //     success: false,
-    //     msg: 'Please enter User OR Party ID',
-    //     data: ''
-    //   };
-    //   res.status(500).send(errors);
-    //   return;
-    // }
+      let nearBy = [];
+
+      // party.map((party, index) => {
+
+      //   party.members.forEach((memberData) => {
+      //       memberData.latitude;
+      //       memberData.longitude;
+      //   })
+
+      //   let dis = distance(
+      //     req.body.latitude,
+      //     req.body.longitude,
+      //     data.latitude,
+      //     data.longitude
+      //   );
+      //   if (dis <= 10) {
+      //     nearBy.push(data);
+      //   }
+      // });
+
+      // console.log(nearBy, 'LLLLLLLLLLL')
+
+      const checkUser =
+        party.map((part) => {
+          let newObj = {};
+          part.members.forEach((memberData) => {
+            if (user.mobile == memberData.phone) {
+              let a = JSON.parse(JSON.stringify(user));
+              a.isOwner = memberData.isOwner;
+              a.latitude = memberData.latitude;
+              a.longitude = memberData.longitude;
+
+              let member_dis = distance(
+                req.body.latitude,
+                req.body.longitude,
+                memberData.latitude,
+                memberData.longitude
+              );
+
+              a.member_distance = member_dis ? member_dis + " kms" : 'No location provided';
+              let party_dis = distance(
+                req.body.latitude,
+                req.body.longitude,
+                part.latitude,
+                part.longitude
+              );
+              a.party_distance = party_dis ? party_dis + " kms" : 'No location provided',
+
+                newObj = a;
+            }
+          })
+          return newObj;
+        })
+
+      getParties = checkUser;
+    }
 
     if (getParties.length == 0) {
       errors = {
@@ -147,6 +207,22 @@ function validateData(body) {
   });
   return Joi.validate(body, schema)
 }
+
+const distance = (lat1, lon1, lat2, lon2) => {
+  var R = 6371; // km (change this constant to get miles)
+  var dLat = ((lat2 - lat1) * Math.PI) / 180;
+  var dLon = ((lon2 - lon1) * Math.PI) / 180;
+  var a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  var d = R * c;
+
+  return Math.round(d);
+};
 
 
 module.exports = app;
