@@ -24,7 +24,9 @@ app.get('/', auth, async (req, res) => {
 
   try {
     let getParties;
-    const user = await UserData.findOne({ _id: req.query.userId });
+    const user = await UserData.findOne({ _id: req.query.userId })
+    .select('_id firstName lastName email mobile profile_img');
+    
     if (req.query.partyId != null) {
 
       await updateLocation(req)
@@ -66,25 +68,27 @@ app.get('/', auth, async (req, res) => {
     else {
       const party = await PartyData.find({ "members.phone": user.mobile });
 
-
+      // console.log(party.length, '///////')
       const checkUser =
-        // party.map((part) => {
-        //   let newPartyObj = {};
-         user.map((userData) => {
+        party.map((part) => {
+          // let newPartyObj = {};
+        //  const partyData = user.map((userData) => {
+          //  console.log(part, '///////')
             let newObj = {};
-            party.members.forEach((memberData) => {
-              if (userData.mobile == memberData.phone) {
-                let a = JSON.parse(JSON.stringify(userData));
+            part.members.forEach((memberData) => {
+              if (user.mobile == memberData.phone) {
+                let a = JSON.parse(JSON.stringify(user));
                 a.isOwner = memberData.isOwner;
                 a.latitude = memberData.latitude;
                 a.longitude = memberData.longitude;
                 newObj = a;
               }
             })
-            return newObj;
+            //  newPartyObj = newObj;
+             return newObj;
           })
 
-        //   console.log(newPartyObj, '::::::::::::::')
+          // console.log(newObj, '::::::::::::::')
         //   return newPartyObj;
         // })
 
