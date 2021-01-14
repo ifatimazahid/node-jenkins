@@ -8,11 +8,11 @@ const Joi = require('joi');
 
 const app = express();
 
-app.get('/', auth, async (req, res) => {
+app.post('/', auth, async (req, res) => {
 
   try {
     var errors;
-    if (req.params.partyId != null) {
+    if (req.body.partyId == null) {
       errors = {
         success: false,
         msg: 'Please enter Party ID!'
@@ -116,7 +116,7 @@ async function updateLocation(req) {
     const getUser = await UserData.findOne({ _id: req.user._id });
 
     await PartyData.findOneAndUpdate({
-      _id: req.query.partyId,
+      _id: req.body.partyId,
       "members.phone": getUser.mobile
     },
       {
@@ -138,6 +138,7 @@ async function updateLocation(req) {
 
 function validateData(body) {
   const schema = Joi.object().keys({
+    partyId: Joi.string().required(),
     latitude: Joi.string().optional(),
     longitude: Joi.string().optional()
   });
