@@ -16,6 +16,10 @@ app.use('/getParties', getParties);
 const host = require('../controllers/party/host');
 app.use('/host', host);
 
+//~~ Get party details ~~//
+const details = require('../controllers/party/details');
+app.use('/details', details);
+
 //~~ Edit a party ~~//
 // const edit = require('../controllers/party/edit');
 // app.use('/edit', edit);
