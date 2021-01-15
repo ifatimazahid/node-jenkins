@@ -11,7 +11,7 @@ const app = express();
 //***** ///// *****//
 
 //***** Post Request for Signup *****//
-app.post('/', (req, res)=> {
+app.post('/', async (req, res)=> {
     const { error } = validateUserData(req.body);
     console.log(error)
     if(error) {
@@ -22,6 +22,17 @@ app.post('/', (req, res)=> {
         };
         res.send(errors);
         return;
+    }
+
+    const alreadyExist = await UserData.find({ $or: [{ email: req.body.email }, { mobile: req.body.mobile }] });
+
+    if (alreadyExist.length > 0) {
+      res.send({
+        data: null,
+        success: false,
+        msg: "Email OR phone already exists"
+      })
+      return;
     }
 
     createUser(req.body).then (
