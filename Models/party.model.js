@@ -2,6 +2,10 @@
 const mongoose = require('mongoose');
 
 const partySchema = new mongoose.Schema({
+  image: {
+    type: String,
+    required: true
+  },
   event_name: {
     type: String,
     required: true
