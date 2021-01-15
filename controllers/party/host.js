@@ -43,6 +43,27 @@ app.post('/',
     const imgURL = await image(path);
     fs.unlinkSync(path);
     req.body.image = imgURL.url;
+
+    const alreadyExist = req.body.members.map((m) => {
+      if(m.isOwner == true){
+        return m.phone
+      }
+    });
+
+    const checkIfExist = await PartyData.findOne({
+      "members.phone": {  $in: alreadyExist },
+      "members.isOwner": true
+    })
+
+    if(checkIfExist != null){
+      var errors = {
+        success: false,
+        msg: 'Can not create multiple parties. Please delete the previous one and try again.'
+      };
+      res.status(409).send(errors);
+      return;
+    }
+
     const hostAParty = await hostParty(req.body)
 
     var success = {
