@@ -40,6 +40,10 @@ const partySchema = new mongoose.Schema({
     isOwner: {
       type: Boolean,
       required: true
+    },
+    status: {
+      type: Number,
+      default: 0
     }
   },
   createdDate:
