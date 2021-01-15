@@ -13,6 +13,8 @@ const app = express();
 app.post('/',
   upload.fields([{ name: "image" }]),
   async (req, res) => {
+
+    req.body.members = JSON.parse(req.body.members);
     const { error } = validateApiData(req.body);
 
     if (error) {
