@@ -52,7 +52,7 @@ function validateUserData(userData) {
         firstName: Joi.string().min(4).max(30).required(),
         lastName: Joi.string().min(4).max(30).required(),
         email: Joi.string().email({ minDomainAtoms: 2 }).required(),
-        mobile: Joi.number(),
+        mobile: Joi.number().required(),
         password: Joi.string().min(5),
         termsAgreed: Joi.boolean().invalid(false).required(),
         gcm_id: Joi.string(),

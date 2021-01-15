@@ -23,7 +23,8 @@ const userSchema = new mongoose.Schema({
     },
     mobile: {
         type: Number,
-        unique: true
+        unique: true,
+        required: true
     },
     termsAgreed: {
         type: Boolean,
