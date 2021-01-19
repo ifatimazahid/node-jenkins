@@ -77,8 +77,6 @@ app.post('/',
 
 async function hostParty(body) {
   return new Promise((resolve, reject) => {
-
-    // console.log(body, '//////////')
     try {
       const party = new PartyData(body);
       const result = party.save();
@@ -101,7 +99,8 @@ function validateApiData(body) {
     members: Joi.array().items(
       Joi.object({
         phone: Joi.number().required(),
-        isOwner: Joi.boolean().required()
+        isOwner: Joi.boolean().required(),
+        status: Joi.number().required()
       })
     )
   });
