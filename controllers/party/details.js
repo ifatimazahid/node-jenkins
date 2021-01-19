@@ -57,6 +57,7 @@ app.post('/', auth, async (req, res) => {
             if (userData.mobile == memberData.phone) {
               let a = JSON.parse(JSON.stringify(userData));
               a.isOwner = memberData.isOwner;
+              a.status = memberData.status;
               a.latitude = memberData.latitude;
               a.longitude = memberData.longitude;
               let member_dis = distance(
