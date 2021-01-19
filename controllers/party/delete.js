@@ -12,7 +12,7 @@ app.delete('/', auth, async (req, res) => {
     if (req.query.partyId == null) {
         var err = {
             success: false,
-            msg: 'Please enter valid User AND Party ID!'
+            msg: 'Please enter valid Party ID!'
         };
         res.status(500).send(err);
         return;
