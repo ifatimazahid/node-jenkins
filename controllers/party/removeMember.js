@@ -63,18 +63,19 @@ async function removeMember(req) {
             "members.phone": req.body.phone
         });
 
-        let party_member = getPartyMembers.members.filter((x, i) => {
+        let party_member = [];
+        getPartyMembers.members.filter((x) => {
             if (x.phone != req.body.phone) {
-                return i;
+                party_member.push(x);
             }
         })
+
         let objToUpdate = {
             members: party_member
         }
 
-        await PartyData.findOneAndUpdate({
-            _id: req.body.partyId
-        },
+        await PartyData.findByIdAndUpdate(
+            req.body.partyId,
             objToUpdate,
             async (err, result) => {
                 if (err) {
