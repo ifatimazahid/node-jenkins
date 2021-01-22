@@ -16,8 +16,10 @@ app.put('/',
     upload.fields([{ name: "image" }]),
     auth, async (req, res) => {
 
+        req.body.members = JSON.parse(req.body.members);
         const { error } = validateData(req.body);
         if (error) {
+            console.log(error, 'error')
             var errors = {
                 success: false,
                 msg: error.details[0].message,
@@ -66,7 +68,8 @@ function validateData(body) {
                 longitude: Joi.string().optional(),
                 status: Joi.number().optional()
             })
-        ).optional()
+        ).optional(),
+        paymentId: Joi.string().optional()
     });
     return Joi.validate(body, schema)
 }
@@ -76,7 +79,7 @@ async function editParty(req) {
 
         const user = await UserData.findOne({ _id: req.user._id });
 
-        if (req.files) {
+        if (req.files.image != null) {
             const image = async (path) => await cloudinary.uploads(path, "partyImage");
             const img = req.files.image[0];
             const { path } = img;
