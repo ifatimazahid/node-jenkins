@@ -32,6 +32,10 @@ app.use('/edit', edit);
 const removeMember = require('../controllers/party/removeMember');
 app.use('/removeMember', removeMember);
 
+// ~~ Member leaves party ~~//
+const memberLeave = require('../controllers/party/memberLeave');
+app.use('/leave', memberLeave);
+
 //~~ Host a party ~~//
 const deleteParty = require('../controllers/party/delete');
 app.use('/delete', deleteParty);
