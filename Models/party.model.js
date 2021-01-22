@@ -6,6 +6,9 @@ const partySchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  paymentId: {
+    type: String
+  },
   event_name: {
     type: String,
     required: true
