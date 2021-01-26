@@ -58,10 +58,9 @@ async function removeMember(req) {
             reject(err);
         }
 
-        const getPartyMembers = await PartyData.findOne({
-            _id: req.body.partyId,
-            "members.phone": req.body.phone
-        });
+        const getPartyMembers = await PartyData.findOne({ _id: req.body.partyId});
+
+        console.log(getPartyMembers)
 
         let party_member = [];
         getPartyMembers.members.filter((x) => {
