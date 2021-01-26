@@ -36,6 +36,7 @@ app.post('/', auth, async (req, res) => {
       return;
     }
 
+
     await updateLocation(req)
       .then(async (rest) => {
 
@@ -116,24 +117,27 @@ async function updateLocation(req) {
 
     const getUser = await UserData.findOne({ _id: req.user._id });
 
-    await PartyData.findOneAndUpdate({
-      _id: req.body.partyId,
-      "members.phone": getUser.mobile
-    },
-      {
-        $set: {
-          "members.$.latitude": req.body.latitude,
-          "members.$.longitude": req.body.longitude,
-        }
+    if (req.body.latitude && req.body.longitude) {
+      await PartyData.findOneAndUpdate({
+        _id: req.body.partyId,
+        "members.phone": getUser.mobile
       },
-      async (err, result) => {
-        if (err) {
-          reject(err);
-        }
+        {
+          $set: {
+            "members.$.latitude": req.body.latitude,
+            "members.$.longitude": req.body.longitude,
+          }
+        },
+        async (err, result) => {
+          if (err) {
+            reject(err);
+          }
+        })
+    }
 
-        const getUpdatedParty = await PartyData.findOne({ _id: result._id });
-        resolve(getUpdatedParty);
-      })
+    const getUpdatedParty = await PartyData.findOne({ _id: req.body.partyId });
+    resolve(getUpdatedParty);
+
   });
 }
 
