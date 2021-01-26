@@ -32,33 +32,33 @@ app.put('/', auth,
 
         const user = await UserData.findOne({ _id: req.user._id });
 
-        if(req.body.status == 1){       //accepted
-        await checkParty(req, user)
-            .then(async () => {
-                console.log('2')
-                req.body.userId = req.user._id;
-                await changeStatus(req, user)
-                    .then((result) => {
-                        console.log('4')
-                        var success = {
-                            success: true,
-                            msg: 'Party accepted!',
-                            data: result
-                        }
-                        res.send(success);
-                        return;
-                    })
-                    .catch(err => {
-                        res.status(500).send(err);
-                        return;
-                    });
-            })
-            .catch(err => {
-                res.status(500).send(err);
-                return;
-            });
-        } else 
-        if(req.body.status == 2){ //rejected
+        // if(req.body.status == 1){       //accepted
+        // await checkParty(req, user)
+        //     .then(async () => {
+        //         console.log('2')
+        //         req.body.userId = req.user._id;
+        //         await changeStatus(req, user)
+        //             .then((result) => {
+        //                 console.log('4')
+        //                 var success = {
+        //                     success: true,
+        //                     msg: 'Party accepted!',
+        //                     data: result
+        //                 }
+        //                 res.send(success);
+        //                 return;
+        //             })
+        //             .catch(err => {
+        //                 res.status(500).send(err);
+        //                 return;
+        //             });
+        //     })
+        //     .catch(err => {
+        //         res.status(500).send(err);
+        //         return;
+        //     });
+        // } else 
+        // if(req.body.status == 2){ //rejected
             await changeStatus(req, user)
             .then((result) => {
                 var success = {
@@ -73,7 +73,7 @@ app.put('/', auth,
                 res.status(500).send(err);
                 return;
             });
-        }
+        // }
     }
 );
 
