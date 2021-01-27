@@ -28,6 +28,10 @@ app.use('/details', details);
 const edit = require('../controllers/party/edit');
 app.use('/edit', edit);
 
+// ~~ Invite a member ~~//
+const inviteMember = require('../controllers/party/inviteMember');
+app.use('/invite/member', inviteMember);
+
 // ~~ Remove a member ~~//
 const removeMember = require('../controllers/party/removeMember');
 app.use('/removeMember', removeMember);
