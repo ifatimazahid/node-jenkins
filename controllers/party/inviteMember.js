@@ -57,7 +57,7 @@ app.put('/', auth, async (req, res) => {
                 success: false,
                 msg: ex
             };
-            res.status(500).send(err);
+            res.send(err);
             return;
         });
 
@@ -67,6 +67,7 @@ app.put('/', auth, async (req, res) => {
 async function inviteMember(req) {
     return new Promise(async (resolve, reject) => {
         const user = await UserData.findOne({ _id: req.user._id });
+
         const party = await PartyData.findOne({
             _id: req.body.partyId,
             "members.phone": user.mobile,
@@ -76,6 +77,7 @@ async function inviteMember(req) {
         if (party == null) {
             var msg = 'Party doesnt exist OR you do not have permission to update it!';
             reject(msg);
+            return;
         }
 
         const alreadyExist = await PartyData.findOne({
@@ -86,6 +88,7 @@ async function inviteMember(req) {
         if (alreadyExist == null) {
             var msg ='This member has already been invited.'
             reject(msg);
+            return;
         }
 
         let new_member = {
@@ -102,6 +105,7 @@ async function inviteMember(req) {
             async (err, result) => {
                 if (err) {
                     reject(err);
+                    return;
                 }
 
                 const party = await PartyData.findOne({ _id: result._id });
