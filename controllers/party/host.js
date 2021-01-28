@@ -6,11 +6,12 @@ const { PartyData } = require('../../Models/party.model');
 const upload = require("../../constants/multer");
 const cloudinary = require("../../constants/cloudinary");
 const fs = require("fs");
-
+const auth = require('../../middleware/auth');
+const { UserData } = require('../../Models/user.model');
 
 const app = express();
 
-app.post('/',
+app.post('/', auth,
   upload.fields([{ name: "image" }]),
   async (req, res) => {
 
@@ -44,16 +45,22 @@ app.post('/',
     fs.unlinkSync(path);
     req.body.image = imgURL.url;
 
-    const alreadyExist = req.body.members.map((m) => {
-      if(m.isOwner == true){
-        return m.phone
-      }
-    });
+    // const alreadyExist = req.body.members.map((m) => {
+    //   if(m.isOwner != true && m.status != 1){
+    //     return m.phone
+    //   }
+    // });
 
+    // const checkIfExist = await PartyData.findOne({
+    //   "members.phone": {  $in: alreadyExist },
+    //   "members.isOwner": true
+    // })
+
+    const user = await UserData.findOne({ _id: req.user._id });
     const checkIfExist = await PartyData.findOne({
-      "members.phone": {  $in: alreadyExist },
-      "members.isOwner": true
-    })
+        "members.$.phone": user.mobile,
+        "members.$.isOwner": true
+      })
 
     if(checkIfExist != null){
       var errors = {
