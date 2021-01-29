@@ -82,7 +82,7 @@ async function inviteMember(req) {
 
         const alreadyExist = await PartyData.findOne({
             _id: req.body.partyId,
-            "members.$.phone": req.body.mobile
+            "members.phone": req.body.mobile
         });
 
         if (alreadyExist == null) {
