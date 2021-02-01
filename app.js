@@ -69,6 +69,15 @@ app.io.on("connection", async function (client) {
     if(e.roomType == 'group') {
       roomData.roomName = e.roomName
     }
+    if(e.partyId){
+      roomData.partyId = e.partyId
+    }
+    if(e.partyDetails){
+      roomData.partyDetails = e.partyDetails
+    }
+    if(e.image){
+      roomData.image = e.image
+    }
     console.log("roomData", roomData)
     const newRoom = new ConversationData(roomData);
     console.log("newRoom-----------", newRoom)
