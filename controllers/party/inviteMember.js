@@ -5,6 +5,8 @@ const { PartyData } = require('../../Models/party.model');
 const { UserData } = require('../../Models/user.model');
 const auth = require('../../middleware/auth');
 const fetch = require('node-fetch');
+const client = require("twilio")(process.env.TWILIO_LIVE_accountSid, process.env.TWILIO_LIVE_authToken);
+require('dotenv').config()
 
 const app = express();
 
@@ -30,7 +32,7 @@ app.put('/', auth, async (req, res) => {
 
     const user = await UserData.findOne({ mobile: req.body.phone });
 
-    if(user ==  null){
+    if (user == null) {
         var err = {
             success: false,
             msg: 'Invalid Member phone!'
@@ -41,8 +43,9 @@ app.put('/', auth, async (req, res) => {
 
     await inviteMember(req)
         .then((party) => {
-            inviteNotification(user)
+            inviteNotification(user, party)
                 .then(() => {
+                    // .then(() => {
                     var success = {
                         success: true,
                         msg: 'Member invited successfully!',
@@ -50,6 +53,7 @@ app.put('/', auth, async (req, res) => {
                     };
                     res.send(success);
                     return;
+                    // })
                 })
         })
         .catch((ex) => {
@@ -82,50 +86,57 @@ async function inviteMember(req) {
 
         const alreadyExist = await PartyData.findOne({
             _id: req.body.partyId,
-            "members.phone": req.body.mobile
+            "members.phone": req.body.phone
         });
 
-        if (alreadyExist == null) {
-            var msg ='This member has already been invited.'
+        if (alreadyExist != null) {
+            var msg = 'This member has already been invited.'
             reject(msg);
             return;
         }
 
-        let new_member = {
-            phone: req.body.phone,
-            isOwner: false,
-            status: 0  //pending
-        };
+        inviteSMS(req)
+            .then(async () => {
+                let new_member = {
+                    phone: req.body.phone,
+                    isOwner: false,
+                    status: 0  //pending
+                };
 
-        party.members.push(new_member);
+                party.members.push(new_member);
 
-        await PartyData.findByIdAndUpdate(
-            req.body.partyId,
-            party,
-            async (err, result) => {
-                if (err) {
-                    reject(err);
-                    return;
-                }
+                await PartyData.findByIdAndUpdate(
+                    req.body.partyId,
+                    party,
+                    async (err, result) => {
+                        if (err) {
+                            reject(err);
+                            return;
+                        }
 
-                const party = await PartyData.findOne({ _id: result._id });
-                resolve(party);
+                        const party = await PartyData.findOne({ _id: result._id });
+                        resolve(party);
+                    });
+            })
+            .catch((e) => {
+                reject(e);
+                return;
             });
     })
 }
 
 
-const inviteNotification = async (user) => {
+const inviteNotification = async (user, party) => {
     const token = user.gcm_id;
     const data = {
         title: 'Party Invitation',
         msg: 'You are invited to party with Us! Click to see details'
     }
 
-    delay(token, data);
+    delay(token, data, party);
 }
 
-const delay = (token, data) => {
+const delay = (token, data, party) => {
     var key = 'AAAAe6315E8:APA91bEGumEyzyH6nUeCUWPl6I08niXGRN7mEbhrzf7T2ivyoACP7CA5kV2IxDw6sxNF0_jPgCUeFN6g5sfaNXQBRRBQowiTkHjs3C-m2EOUECLG-qsqU9C0Wpr3Cl2kwSqmY2O8Ui40';
     return new Promise((resolve, reject) => {
         fetch('https://fcm.googleapis.com/fcm/send', {
@@ -135,7 +146,11 @@ const delay = (token, data) => {
                 'Content-Type': 'application/json'
             },
             'body': JSON.stringify({
-                'to': token, 'data': data, 'priority': "high",
+                'to': token, 'notification': data, 'data': {
+                    type: 'party',
+                    party,
+                },
+                'priority': "high",
                 time_to_live: 5,
                 content_available: true
             }),
@@ -147,6 +162,25 @@ const delay = (token, data) => {
             reject(error)
         });
     })
+}
+
+async function inviteSMS(req) {
+    return new Promise((resolve, reject) => {
+        let message_body = 'You have been invited to a party! Follow this link to see details:'
+        client.messages.create({
+            to: req.body.phone,
+            from: process.env.FROM_NUMBER,
+            body: message_body
+        })
+            .then(messages => {
+                console.log(messages)
+                resolve(messages)
+            })
+            .catch((e) => {
+                reject(e.message);
+                return;
+            });
+    });
 }
 
 module.exports = app;
