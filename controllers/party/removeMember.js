@@ -4,6 +4,7 @@ const express = require('express');
 const { PartyData } = require('../../Models/party.model');
 const { UserData } = require('../../Models/user.model');
 const auth = require('../../middleware/auth');
+const { ConversationData } = require('../../Models/conversation.model');
 
 const app = express();
 
@@ -58,9 +59,7 @@ async function removeMember(req) {
             reject(err);
         }
 
-        const getPartyMembers = await PartyData.findOne({ _id: req.body.partyId});
-
-        console.log(getPartyMembers)
+        const getPartyMembers = await PartyData.findOne({ _id: req.body.partyId });
 
         let party_member = [];
         getPartyMembers.members.filter((x) => {
@@ -76,14 +75,24 @@ async function removeMember(req) {
         await PartyData.findByIdAndUpdate(
             req.body.partyId,
             objToUpdate,
-            async (err, result) => {
+            async err => {
                 if (err) {
                     reject(err);
                 }
 
-                const party = await PartyData.findOne({ _id: result._id });
-                resolve(party);
+        const member = await UserData.findOne({ mobile: req.body.phone });
+
+        await ConversationData.findOneAndUpdate({partyId: req.body.partyId},
+            { [member._id]: false },
+            async err => {
+                if (err) {
+                    reject(err);
+                }
             });
+
+        const party = await PartyData.findOne({ _id: req.body.partyId });
+        resolve(party);
+        });
     })
 }
 
