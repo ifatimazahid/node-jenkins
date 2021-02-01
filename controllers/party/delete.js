@@ -3,6 +3,7 @@
 const express = require('express');
 const { PartyData } = require('../../Models/party.model');
 const { UserData } = require('../../Models/user.model');
+const { ConversationData } = require('../../Models/conversation.model');
 const auth = require('../../middleware/auth');
 
 const app = express();
@@ -66,6 +67,15 @@ async function deleteParty(req) {
                     if (err) {
                         reject(err);
                     }
+
+                    await ConversationData.findOneAndDelete({
+                        partyId: req.query.partyId
+                    },
+                        async err => {
+                            if (err) {
+                                reject(err);
+                            }
+                        })
                     resolve(result);
                 });
             }
