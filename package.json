@@ -32,6 +32,7 @@
     "node-fetch": "^2.6.1",
     "nodemailer": "^6.4.5",
     "nodemailer-express-handlebars": "^3.1.0",
+    "paypal-rest-sdk": "^1.8.1",
     "pug": "2.0.0-beta11",
     "qs": "^6.9.6",
     "socket.io": "^2.3.0",
