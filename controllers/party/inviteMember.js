@@ -6,6 +6,7 @@ const { UserData } = require('../../Models/user.model');
 const auth = require('../../middleware/auth');
 const fetch = require('node-fetch');
 const client = require("twilio")(process.env.TWILIO_LIVE_accountSid, process.env.TWILIO_LIVE_authToken);
+const { ConversationData } = require('../../Models/conversation.model');
 require('dotenv').config()
 
 const app = express();
@@ -30,18 +31,7 @@ app.put('/', auth, async (req, res) => {
         return;
     }
 
-    const member = await UserData.findOne({ mobile: req.body.phone });
-
-    if (member == null) {
-        var err = {
-            success: false,
-            msg: 'Invalid Member phone!'
-        };
-        res.status(500).send(err);
-        return;
-    }
-
-    await inviteMember(req, member)
+    await inviteMember(req)
         .then(party => {
 
             inviteSMS(req)
@@ -54,19 +44,19 @@ app.put('/', auth, async (req, res) => {
                     res.send(success);
                     return;
                 })
-                .catch((ex) => {
-                    var err = {
-                        success: false,
-                        msg: ex
-                    };
-                    res.send(err);
-                    return;
-                });
+        })
+        .catch((ex) => {
+            var err = {
+                success: false,
+                msg: ex
+            };
+            res.send(err);
+            return;
         });
 });
 
 
-async function inviteMember(req, member) {
+async function inviteMember(req) {
     return new Promise(async (resolve, reject) => {
         const user = await UserData.findOne({ _id: req.user._id });
 
@@ -110,10 +100,29 @@ async function inviteMember(req, member) {
                     return;
                 }
 
-                const party = await PartyData.findOne({ _id: result._id });
+                const member = await UserData.findOne({ mobile: req.body.phone });
+
+                if (member != null) {
+
+                    const convo = await ConversationData.findOne({ partyId: req.body.partyId });
+                    const getUserInfo = JSON.parse(JSON.stringify(convo));
+                    getUserInfo.usersInfo.push(member)
+
+                    var query = { [member._id]: true, usersInfo: getUserInfo.usersInfo }
+                    await ConversationData.findOneAndUpdate({ partyId: req.body.partyId },
+                        { $set: query },
+                        async err => {
+                            if (err) {
+                                reject(err);
+                                return;
+                            }
+                        })
+                }
+
+                const partyInfo = await PartyData.findOne({ _id: result._id });
                 inviteNotification(member, party)
                     .then(() => {
-                        resolve(party);
+                        resolve(partyInfo);
                     })
             })
     })
