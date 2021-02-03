@@ -85,6 +85,8 @@ app.post('/', auth,
 async function hostParty(body) {
   return new Promise((resolve, reject) => {
     try {
+      if(!body.isSubscribed)
+      body.isSubscribed = false;
       const party = new PartyData(body);
       const result = party.save();
       resolve(result);
@@ -109,7 +111,8 @@ function validateApiData(body) {
         isOwner: Joi.boolean().required(),
         status: Joi.number().required()
       })
-    )
+    ),
+    isSubscribed: Joi.boolean().optional()
   });
   return Joi.validate(body, schema)
 }

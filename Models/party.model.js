@@ -50,6 +50,11 @@ const partySchema = new mongoose.Schema({
       default: 0
     }
   },
+  isSubscribed: {
+    type: Boolean,
+    required: false,
+    default: false
+  },
   createdDate:
   { type: Date, default: Date.now },
 },
