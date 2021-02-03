@@ -7,13 +7,14 @@ var qs = require('qs');
 
 const app = express();
 
-app.post('/', auth, async (req, res) => {
+app.get('/', auth, async (req, res) => {
     try {
         await executePayment()
             .then((result) => {
 
                 let dataObj = {
                     amount: 5,
+                    currency: 'USD',
                     access_token: result.access_token
                 }
 
