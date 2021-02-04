@@ -6,6 +6,7 @@ const { UserData } = require('../../Models/user.model');
 const auth = require('../../middleware/auth');
 const fetch = require('node-fetch');
 const client = require("twilio")(process.env.TWILIO_LIVE_accountSid, process.env.TWILIO_LIVE_authToken);
+const { ConversationData } = require('../../Models/conversation.model');
 require('dotenv').config()
 
 const app = express();
@@ -30,22 +31,20 @@ app.put('/', auth, async (req, res) => {
         return;
     }
 
-    const user = await UserData.findOne({ mobile: req.body.phone });
-
-    if (user == null) {
+    if (typeof (req.body.phone) !== typeof 123) {
         var err = {
             success: false,
-            msg: 'Invalid Member phone!'
+            msg: 'Please enter valid Phone number!'
         };
-        res.status(500).send(err);
+        res.send(err);
         return;
     }
 
-    await inviteMember(req)
-        .then((party) => {
-            inviteNotification(user, party)
-                .then(() => {
-                    // .then(() => {
+    await inviteMember(req, res)
+        .then(party => {
+
+            inviteSMS(req)
+                .then(async () => {
                     var success = {
                         success: true,
                         msg: 'Member invited successfully!',
@@ -53,8 +52,15 @@ app.put('/', auth, async (req, res) => {
                     };
                     res.send(success);
                     return;
-                    // })
                 })
+                .catch((ex) => {
+                    var err = {
+                        success: false,
+                        msg: ex
+                    };
+                    res.send(err);
+                    return;
+                });
         })
         .catch((ex) => {
             var err = {
@@ -64,11 +70,10 @@ app.put('/', auth, async (req, res) => {
             res.send(err);
             return;
         });
-
 });
 
 
-async function inviteMember(req) {
+async function inviteMember(req, res) {
     return new Promise(async (resolve, reject) => {
         const user = await UserData.findOne({ _id: req.user._id });
 
@@ -90,44 +95,100 @@ async function inviteMember(req) {
         });
 
         if (alreadyExist != null) {
-            var msg = 'This member has already been invited.'
-            reject(msg);
-            return;
-        }
-
-        inviteSMS(req)
-            .then(async () => {
-                let new_member = {
-                    phone: req.body.phone,
-                    isOwner: false,
-                    status: 0  //pending
-                };
-
-                party.members.push(new_member);
-
-                await PartyData.findByIdAndUpdate(
-                    req.body.partyId,
-                    party,
-                    async (err, result) => {
-                        if (err) {
-                            reject(err);
+            const member = await UserData.findOne({ mobile: req.body.phone });
+            inviteNotification(member, party)
+                .then(async () => {
+                    inviteSMS(req, res)
+                        .then(async () => {
+                            var success = {
+                                success: true,
+                                msg: 'Member invited successfully!',
+                                data: party
+                            };
+                            res.send(success);
                             return;
-                        }
+                        })
+                        .catch((ex) => {
+                            var err = {
+                                success: false,
+                                msg: ex
+                            };
+                            res.send(err);
+                            return;
+                        });
+                })
+                .catch((ex) => {
+                    var err = {
+                        success: false,
+                        msg: ex
+                    };
+                    res.send(err);
+                    return;
+                });
 
-                        const party = await PartyData.findOne({ _id: result._id });
-                        resolve(party);
-                    });
-            })
-            .catch((e) => {
-                reject(e);
-                return;
-            });
+        }
+        else {
+
+            let new_member = {
+                phone: req.body.phone,
+                isOwner: false,
+                status: 0  //pending
+            };
+
+            party.members.push(new_member);
+
+            await PartyData.findByIdAndUpdate(
+                req.body.partyId,
+                party,
+                async (err, result) => {
+                    if (err) {
+                        reject(err);
+                        return;
+                    }
+
+                    const member = await UserData.findOne({ mobile: req.body.phone });
+
+                    if (member != null) {
+
+                        const convo = await ConversationData.findOne({ partyId: req.body.partyId });
+                        const getUserInfo = JSON.parse(JSON.stringify(convo));
+                        getUserInfo.usersInfo.push(member)
+
+                        var query = { [member._id]: true, usersInfo: getUserInfo.usersInfo }
+                        await ConversationData.findOneAndUpdate({ partyId: req.body.partyId },
+                            { $set: query },
+                            async err => {
+                                if (err) {
+                                    reject(err);
+                                    return;
+                                }
+                            })
+
+                        const partyInfo = await PartyData.findOne({ _id: result._id });
+                        inviteNotification(member, party)
+                            .then(() => {
+                                resolve(partyInfo);
+                            })
+                            .catch((ex) => {
+                                reject(ex);
+                            });
+                    }
+                    else {
+                        const partyInfo = await PartyData.findOne({ _id: result._id });
+                        resolve(partyInfo);
+                    }
+
+                })
+        }
     })
 }
 
 
-const inviteNotification = async (user, party) => {
-    const token = user.gcm_id;
+const inviteNotification = async (member, party) => {
+    if(member == null)
+    return;
+
+    const token = member.gcm_id;
     const data = {
         title: 'Party Invitation',
         msg: 'You are invited to party with Us! Click to see details'
@@ -173,7 +234,7 @@ async function inviteSMS(req) {
             body: message_body
         })
             .then(messages => {
-                console.log(messages)
+                console.log(messages, 'sendSMSResponse')
                 resolve(messages)
             })
             .catch((e) => {
