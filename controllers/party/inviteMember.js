@@ -44,6 +44,14 @@ app.put('/', auth, async (req, res) => {
                     res.send(success);
                     return;
                 })
+                .catch((ex) => {
+                    var err = {
+                        success: false,
+                        msg: ex
+                    };
+                    res.send(err);
+                    return;
+                });
         })
         .catch((ex) => {
             var err = {
@@ -124,6 +132,9 @@ async function inviteMember(req) {
                     .then(() => {
                         resolve(partyInfo);
                     })
+                    .catch((ex) => {
+                        reject(ex);
+                    });
             })
     })
 }
