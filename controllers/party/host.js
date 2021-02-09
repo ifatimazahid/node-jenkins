@@ -131,7 +131,10 @@ const inviteNotification = async (body) => {
 
   let phone_nos = [];
   phone_nos = body.members.map(x => {
-    return x.phone;
+
+    if(x.isOwner != true){
+      return x.phone;
+    }
   })
 
   let users = [];
