@@ -16,7 +16,10 @@ app.put('/',
     upload.fields([{ name: "image" }]),
     auth, async (req, res) => {
 
-        req.body.members = JSON.parse(req.body.members);
+        if(req.body.members){
+            req.body.members = JSON.parse(req.body.members);
+        }
+        
         const { error } = validateData(req.body);
         if (error) {
             console.log(error, 'error')
@@ -69,7 +72,8 @@ function validateData(body) {
                 status: Joi.number().optional()
             })
         ).optional(),
-        paymentId: Joi.string().optional()
+        paymentId: Joi.string().optional(),
+        isSubscribed: Joi.string().optional()
     });
     return Joi.validate(body, schema)
 }
