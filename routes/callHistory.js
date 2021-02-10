@@ -13,10 +13,4 @@ const getCallHistory = require('../controllers/callHistory/getCallHistory');
 
 app.use('/get-call-history', getCallHistory);
 
-const post = require('../controllers/callHistory/postAudio');
-app.use('/post', post);
-
-const get = require('../controllers/callHistory/getAudio');
-app.use('/get', get);
-
 module.exports = app;
