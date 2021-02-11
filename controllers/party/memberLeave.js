@@ -3,12 +3,11 @@
 const express = require('express');
 const { PartyData } = require('../../Models/party.model');
 const { UserData } = require('../../Models/user.model');
-const { ConversationData } = require('../../Models/conversation.model');
 const auth = require('../../middleware/auth');
 
 const app = express();
 
-app.delete('/', auth, async (req, res) => {
+app.put('/', auth, async (req, res) => {
 
     if (req.query.partyId == null) {
         var err = {
@@ -19,11 +18,11 @@ app.delete('/', auth, async (req, res) => {
         return;
     }
 
-    await deleteParty(req)
+    await memberLeave(req)
         .then(() => {
             var success = {
                 success: true,
-                msg: 'Party deleted successfully!'
+                msg: 'You have left this party successfully!'
             };
             res.send(success);
             return;
@@ -41,45 +40,37 @@ app.delete('/', auth, async (req, res) => {
 });
 
 
-async function deleteParty(req) {
+async function memberLeave(req) {
     return new Promise(async (resolve, reject) => {
         const user = await UserData.findOne({ _id: req.user._id });
 
         const party = await PartyData.findOne({
             _id: req.query.partyId,
-            "members.phone": user.mobile,
-            "members.isOwner": true
+            "members.phone": user.mobile
         });
 
         if (party == null) {
             var err = {
-                msg: 'Party doesnt exist OR you do not have permission to delete it!'
+                msg: 'Party doesnt exist OR you are not a member of it!'
             };
             reject(err);
         }
 
-        party.members.map(async (pty) => {
-
-            if (pty.phone === user.mobile) {
-                await PartyData.findOneAndDelete({
-                    _id: req.query.partyId
-                }, async (err, result) => {
-                    if (err) {
-                        reject(err);
-                    }
-
-                    await ConversationData.findOneAndDelete({
-                        partyId: req.query.partyId
-                    },
-                        async err => {
-                            if (err) {
-                                reject(err);
-                            }
-                        })
-                    resolve(result);
-                });
-            }
-        })
+        await PartyData.findOneAndUpdate({
+            _id: req.query.partyId,
+            "members.phone": user.mobile
+        },
+            {
+                $set: {
+                    "members.$.status": 3,
+                }
+            },
+            async (err, result) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(result);
+            });
     })
 }
 

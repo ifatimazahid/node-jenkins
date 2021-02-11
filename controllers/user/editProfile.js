@@ -125,7 +125,7 @@ async function checkUser(body, profile, url) {
     body.profile_img = imageUrl.url
   }
   if(!body.profile_img){
-    body.profile_img = 'host/public/images/user.png'
+    body.profile_img = 'http://res.cloudinary.com/itsolution24x7/image/upload/v1612875127/partyImage/yrsdbs3ki7oyiuuwklbx.png'
   }
   // body.profile_img = body.profile_img.slice(body.profile_img.indexOf("public")-5, body.profile_img.length);
   

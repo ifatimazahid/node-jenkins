@@ -76,7 +76,7 @@ function validateUserData(userData) {
 //***** Initialing and saving data *****//
 async function createUser(userData) {
     // return new Promise((res)=> {
-    userData.profile_img = 'host/public/images/user.png';
+    userData.profile_img = 'http://res.cloudinary.com/itsolution24x7/image/upload/v1612875127/partyImage/yrsdbs3ki7oyiuuwklbx.png';
     userData.login_type = 0;
     const user = new UserData(userData);
     const salt = await bcrypt.genSalt(10);

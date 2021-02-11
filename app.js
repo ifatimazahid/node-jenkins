@@ -22,11 +22,16 @@ mongoose
     "mongodb+srv://abdulbhai:W123456@cluster0-71cfj.mongodb.net/test?retryWrites=true&w=majority"
   )
   .catch((err) => console.error("Could not connect to database...", err));
+
 //***** ///// *****//
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "pug");
-app.use(cors());
+// app.use(cors());
+app.use(cors({
+  origin:['http://localhost:8081','http://127.0.0.1:8081'],
+  credentials:true
+}));
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -38,6 +43,15 @@ app.use("/api", indexRouter);
 app.use(function (req, res, next) {
   next(createError(404));
 });
+
+app.use(function (req, res, next) {
+  res.header('Access-Control-Allow-Origin', "http://localhost:8081");
+  res.header('Access-Control-Allow-Headers', true);
+  res.header('Access-Control-Allow-Credentials', true);
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+  next();
+});
+
 app.io.on("connection", async function (client) {
 
   client.on('createRoom', async (e) => {
@@ -54,6 +68,15 @@ app.io.on("connection", async function (client) {
     roomData.roomType = e.roomType
     if(e.roomType == 'group') {
       roomData.roomName = e.roomName
+    }
+    if(e.partyId){
+      roomData.partyId = e.partyId
+    }
+    if(e.partyDetails){
+      roomData.partyDetails = e.partyDetails
+    }
+    if(e.image){
+      roomData.image = e.image
     }
     console.log("roomData", roomData)
     const newRoom = new ConversationData(roomData);

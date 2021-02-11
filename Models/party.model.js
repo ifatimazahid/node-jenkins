@@ -6,6 +6,9 @@ const partySchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  paymentId: {
+    type: String
+  },
   event_name: {
     type: String,
     required: true
@@ -43,8 +46,14 @@ const partySchema = new mongoose.Schema({
     },
     status: {
       type: Number,
+      required: true,
       default: 0
     }
+  },
+  isSubscribed: {
+    type: Boolean,
+    required: false,
+    default: false
   },
   createdDate:
   { type: Date, default: Date.now },

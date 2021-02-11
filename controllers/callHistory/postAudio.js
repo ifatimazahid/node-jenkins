@@ -40,8 +40,6 @@ async function saveMsg(req) {
         const { path } = aud;
         const audURL = await audio(path);
         fs.unlinkSync(path);
-
-        console.log(audURL, '::::::::::::::::::::::;')
         req.body.audio = audURL.url;
 
         const newMessage = new MessageData(req.body);

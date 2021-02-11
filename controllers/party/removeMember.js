@@ -3,14 +3,14 @@
 const express = require('express');
 const { PartyData } = require('../../Models/party.model');
 const { UserData } = require('../../Models/user.model');
-const { ConversationData } = require('../../Models/conversation.model');
 const auth = require('../../middleware/auth');
+const { ConversationData } = require('../../Models/conversation.model');
 
 const app = express();
 
-app.delete('/', auth, async (req, res) => {
+app.put('/', auth, async (req, res) => {
 
-    if (req.query.partyId == null) {
+    if (req.body.partyId == null) {
         var err = {
             success: false,
             msg: 'Please enter valid Party ID!'
@@ -19,11 +19,12 @@ app.delete('/', auth, async (req, res) => {
         return;
     }
 
-    await deleteParty(req)
-        .then(() => {
+    await removeMember(req)
+        .then((party) => {
             var success = {
                 success: true,
-                msg: 'Party deleted successfully!'
+                msg: 'Member removed successfully!',
+                data: party
             };
             res.send(success);
             return;
@@ -41,12 +42,12 @@ app.delete('/', auth, async (req, res) => {
 });
 
 
-async function deleteParty(req) {
+async function removeMember(req) {
     return new Promise(async (resolve, reject) => {
         const user = await UserData.findOne({ _id: req.user._id });
 
         const party = await PartyData.findOne({
-            _id: req.query.partyId,
+            _id: req.body.partyId,
             "members.phone": user.mobile,
             "members.isOwner": true
         });
@@ -58,28 +59,40 @@ async function deleteParty(req) {
             reject(err);
         }
 
-        party.members.map(async (pty) => {
+        const getPartyMembers = await PartyData.findOne({ _id: req.body.partyId });
 
-            if (pty.phone === user.mobile) {
-                await PartyData.findOneAndDelete({
-                    _id: req.query.partyId
-                }, async (err, result) => {
-                    if (err) {
-                        reject(err);
-                    }
-
-                    await ConversationData.findOneAndDelete({
-                        partyId: req.query.partyId
-                    },
-                        async err => {
-                            if (err) {
-                                reject(err);
-                            }
-                        })
-                    resolve(result);
-                });
+        let party_member = [];
+        getPartyMembers.members.filter((x) => {
+            if (x.phone != req.body.phone) {
+                party_member.push(x);
             }
         })
+
+        let objToUpdate = {
+            members: party_member
+        }
+
+        await PartyData.findByIdAndUpdate(
+            req.body.partyId,
+            objToUpdate,
+            async err => {
+                if (err) {
+                    reject(err);
+                }
+
+        const member = await UserData.findOne({ mobile: req.body.phone });
+
+        await ConversationData.findOneAndUpdate({partyId: req.body.partyId},
+            { [member._id]: false },
+            async err => {
+                if (err) {
+                    reject(err);
+                }
+            });
+
+        const party = await PartyData.findOne({ _id: req.body.partyId });
+        resolve(party);
+        });
     })
 }
 
