@@ -47,7 +47,7 @@ app.put('/', auth, async (req, res) => {
                 .then(async () => {
                     var success = {
                         success: true,
-                        msg: 'Member invited successfully!',
+                        msg: 'Member already invited!',
                         data: party
                     };
                     res.send(success);
@@ -102,7 +102,7 @@ async function inviteMember(req, res) {
                         .then(async () => {
                             var success = {
                                 success: true,
-                                msg: 'Member invited successfully!',
+                                msg: 'Member already invited!',
                                 data: party
                             };
                             res.send(success);
