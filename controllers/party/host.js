@@ -59,8 +59,8 @@ app.post('/', auth,
 
     const user = await UserData.findOne({ _id: req.user._id });
     const checkIfExist = await PartyData.findOne({
-      "members.$.phone": user.mobile,
-      "members.$.isOwner": true
+      "members.phone": user.mobile,
+      "members.isOwner": true
     })
 
     if (checkIfExist != null) {
