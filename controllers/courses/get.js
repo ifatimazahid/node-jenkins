@@ -7,11 +7,11 @@ const Joi = require("joi");
 const app = express();
 
 app.get("/get", async (req, res) => {
-  const course = await getAllCourses();
+  // const course = await getAllCourses();
   var success = {
     success: true,
     msg: "Courses Found",
-    data: course,
+    data: "course",
   };
   res.send(success);
 });

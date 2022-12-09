@@ -20,17 +20,17 @@ app.post('/add', async (req, res) => {
         return;
     }
 
-    if(req.body.liveSession == true){
-        const uid = uuidv4();
-        const channel = process.env.CHANNEL_NAME;
+    // if(req.body.liveSession == true){
+    //     const uid = uuidv4();
+    //     const channel = process.env.CHANNEL_NAME;
 
-        generateToken(uid, channel, 1)
-        .then(token => {
-            console.log(token, 'LLLL')
-            startBasicCall(token, uid)
-        })
-        .catch(ex => console.log(ex, '////////'))
-    }
+    //     generateToken(uid, channel, 1)
+    //     .then(token => {
+    //         console.log(token, 'LLLL')
+    //         startBasicCall(token, uid)
+    //     })
+    //     .catch(ex => console.log(ex, '////////'))
+    // }
 
     // let course = await addCourse(req.body)
     // let session = await addSession(req.body)

@@ -11,11 +11,11 @@ app.use(express.static(__dirname + '/public'));
 app.use(express.json());
 const router = require("./routes/index");
 
-mongoose
-  .connect(
-    process.env.MONGO_CONNECT_STRING,
-    { useNewUrlParser: true }
-  ).catch((err) => console.error("Could not connect to database...", err));
+// mongoose
+//   .connect(
+//     process.env.MONGO_CONNECT_STRING,
+//     { useNewUrlParser: true }
+//   ).catch((err) => console.error("Could not connect to database...", err));
 
 const SERVICE_PORT = process.env.PORT;
 http.createServer(app).listen(SERVICE_PORT)
