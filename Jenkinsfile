@@ -1,5 +1,5 @@
 pipeline {
-    agent { any { image 'node:16.17.1-alpine' args: '-p 3000:3000' } }
+    agent { any { image 'node:16.17.1-alpine' args '-p 3000:3000' } }
     environment { CI = 'true' }
     stages {
         stage('build') {
