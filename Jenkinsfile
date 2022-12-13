@@ -9,18 +9,15 @@ pipeline {
         }
         stage('test') {
             steps {
-                bat 'npm test'
-                // bat './jenkins/scripts/test.bat'
+                // bat 'npm test'
+                bat './jenkins/scripts/test.bat'
             }
         }
         stage('deliver') {
             steps {
-                bat 'npm run build:app'
-                bat 'npm start'
-                // bat './jenkins/scripts/deliver.bat'
+                bat './jenkins/scripts/deliver.bat'
                 input message: 'Finished?'
-                bat 'kill task by pid'
-                // bat './jenkins/scripts/kill.bat'
+                bat './jenkins/scripts/kill.bat'
             }
         }
     }
