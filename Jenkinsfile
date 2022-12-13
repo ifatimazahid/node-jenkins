@@ -7,7 +7,7 @@ pipeline {
                 bat 'npm install'
             }
         }
-        stage('Test') {
+        stage('test') {
             steps {
                 bat './jenkins/scripts/test.sh'
             }
