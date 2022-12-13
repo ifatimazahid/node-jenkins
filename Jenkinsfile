@@ -12,5 +12,12 @@ pipeline {
                 bat './jenkins/scripts/test.bat'
             }
         }
+        stage('deliver') {
+            steps {
+                bat './jenkins/scripts/deliver.bat'
+                input message: 'Finished?'
+                bat './jenkins/scripts/kill.bat'
+            }
+        }
     }
 }
