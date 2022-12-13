@@ -9,14 +9,17 @@ pipeline {
         }
         stage('test') {
             steps {
-                bat './jenkins/scripts/test.bat'
+                bat 'npm test'
+                // bat './jenkins/scripts/test.bat'
             }
         }
         stage('deliver') {
             steps {
-                bat './jenkins/scripts/deliver.bat'
-                input message: 'Finished?'
-                bat './jenkins/scripts/kill.bat'
+                bat 'npm run build'
+                bat 'npm start'
+                // bat './jenkins/scripts/deliver.bat'
+                // input message: 'Finished?'
+                // bat './jenkins/scripts/kill.bat'
             }
         }
     }
