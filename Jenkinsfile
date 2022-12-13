@@ -15,7 +15,7 @@ pipeline {
         }
         stage('deliver') {
             steps {
-                bat 'npm run build'
+                bat 'npm run build:app'
                 bat 'npm start'
                 // bat './jenkins/scripts/deliver.bat'
                 input message: 'Finished?'
