@@ -17,7 +17,7 @@ pipeline {
             steps {
                 bat './jenkins/scripts/deliver.bat'
                 input message: 'Finished?'
-                bat './jenkins/scripts/kill.bat'
+                // bat './jenkins/scripts/kill.bat'
             }
         }
     }
