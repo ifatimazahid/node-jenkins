@@ -9,7 +9,7 @@ pipeline {
         }
         stage('test') {
             steps {
-                bat './jenkins/scripts/test.sh'
+                bat 'echo "Fail!"; exit 1'
             }
         }
     }
