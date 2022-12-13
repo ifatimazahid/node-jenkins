@@ -18,7 +18,8 @@ pipeline {
                 bat 'npm run build'
                 bat 'npm start'
                 // bat './jenkins/scripts/deliver.bat'
-                // input message: 'Finished?'
+                input message: 'Finished?'
+                bat 'kill task by pid'
                 // bat './jenkins/scripts/kill.bat'
             }
         }
