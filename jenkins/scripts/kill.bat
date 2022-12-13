@@ -1,2 +1,2 @@
 echo "Inside kill file"
-TSKILL PID
+@REM TSKILL PID
